@@ -347,6 +347,18 @@ app.get('/modulos', authenticateToken, (req, res) => {
     res.json(MOCK_MODULOS);
 });
 
+// Rota para detalhes de UM módulo (Correção do Erro 404)
+app.get('/modulos/:id', authenticateToken, (req, res) => {
+    const id = parseInt(req.params.id);
+    const modulo = MOCK_MODULOS.find(m => m.id === id);
+
+    if (!modulo) {
+        return res.status(404).json({ error: 'Módulo não encontrado.' });
+    }
+
+    res.json(modulo);
+});
+
 app.get('/progresso', authenticateToken, async (req, res) => {
     // Busca progresso do banco REAL
     const progressos = await prisma.progresso.findMany({
