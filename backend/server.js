@@ -471,49 +471,127 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
     res.json(resultado);
 });
 
-// --- ROTA DE GERAÇÃO DE CERTIFICADO (NOVO) ---
+// --- ROTA DE GERAÇÃO DE CERTIFICADO (DESIGN ORIGINAL RESTAURADO) ---
 app.post('/gerar-certificado', authenticateToken, (req, res) => {
     const { safeStudentName } = req.body;
     const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
 
-    // Create a document
     const doc = new PDFDocument({
         layout: 'landscape',
         size: 'A4',
+        margin: 0 // Margem zero para cobrir tudo
     });
 
-    // Pipe the PDF into the response
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=certificado_${req.user.id}.pdf`);
     doc.pipe(res);
 
-    // --- DESIGN DO CERTIFICADO ---
-    // Fundo (se tivesse) ou Borda
-    doc.rect(20, 20, doc.page.width - 40, doc.page.height - 40).stroke('#10b981'); // Borda Verde Esmeralda
+    // Dimensões A4 Paisagem: ~841.89 x 595.28 points
+    const width = doc.page.width;
+    const height = doc.page.height;
+    const sidebarWidth = width * 0.33; // 33% para a barra lateral
 
-    // Cabeçalho
-    doc.moveDown(4);
-    doc.fontSize(30).font('Helvetica-Bold').fillColor('#064e3b').text('CERTIFICADO DE CONCLUSÃO', { align: 'center' });
+    // --- 1. FUNDO PRINCIPAL (Beige) ---
+    doc.rect(0, 0, width, height).fill('#F6F1E9');
 
-    doc.moveDown(1);
-    doc.fontSize(15).font('Helvetica').fillColor('#333').text('Certificamos que', { align: 'center' });
+    // --- 2. BARRA LATERAL (Cinza/Beige Escuro) ---
+    doc.rect(0, 0, sidebarWidth, height).fill('#e9e4de');
 
-    doc.moveDown(1);
-    doc.fontSize(25).font('Helvetica-Bold').fillColor('#000').text(studentName, { align: 'center' });
+    // --- 3. IMAGEM LATERAL (Ervas) ---
+    // Tentativa de carregar a imagem, com fallback se falhar (ex: por ser WebP)
+    const assetsDir = path.join(__dirname, 'assets', 'cert');
+    try {
+        // Tenta usar o arquivo original (se fosse suportado) ou o fallback JPG que preparamos
+        const bgImage = path.join(assetsDir, 'ervas_fallback.jpg');
+        if (fs.existsSync(bgImage)) {
+            doc.image(bgImage, 0, 0, {
+                width: sidebarWidth,
+                height: height,
+                fit: [sidebarWidth, height],
+                align: 'center',
+                valign: 'center'
+            });
+            // Overlay para ofuscar um pouco a imagem (opacity trick)
+            doc.rect(0, 0, sidebarWidth, height).fillOpacity(0.3).fill('#e9e4de').fillOpacity(1);
+        }
+    } catch (e) {
+        console.error("Erro ao carregar imagem lateral:", e);
+    }
 
-    doc.moveDown(1);
-    doc.fontSize(15).font('Helvetica').fillColor('#333').text('concluiu com êxito o curso', { align: 'center' });
+    // --- 4. CONTEÚDO PRINCIPAL ---
+    const contentX = sidebarWidth + 50;
+    const contentWidth = width - sidebarWidth - 100;
+    const centerX = contentX + (contentWidth / 2);
 
-    doc.moveDown(0.5);
-    doc.fontSize(20).font('Helvetica-Bold').fillColor('#10b981').text('Saberes da Floresta', { align: 'center' });
+    // Selo / Medalha
+    try {
+        const sealPath = path.join(assetsDir, 'medalha.png');
+        if (fs.existsSync(sealPath)) {
+            doc.image(sealPath, width - 120, 30, { width: 80 });
+        }
+    } catch (e) { }
 
-    doc.moveDown(4);
-    // Assinatura Fake
-    doc.fontSize(12).font('Helvetica').fillColor('#555').text('__________________________________', { align: 'center' });
-    doc.text('Dr. José Nakamura', { align: 'center' });
-    doc.text('Diretor Acadêmico', { align: 'center' });
+    let currentY = 80;
 
-    // Finalize PDF file
+    // Título da Escola
+    doc.font('Times-Bold').fontSize(22).fillColor('#5d6d5f')
+        .text('SABERES DA FLORESTA', contentX, currentY, { align: 'center', width: contentWidth, characterSpacing: 2 });
+
+    currentY += 40;
+
+    // Título do Certificado
+    doc.font('Times-Roman').fontSize(48).fillColor('#333')
+        .text('Certificado de Conclusão', contentX, currentY, { align: 'center', width: contentWidth });
+
+    currentY += 50;
+    doc.fontSize(14).fillColor('#888').font('Helvetica')
+        .text('CERTIFICATE OF COMPLETION', contentX, currentY, { align: 'center', width: contentWidth, characterSpacing: 3 });
+
+    currentY += 60;
+    doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica')
+        .text('Este certificado é concedido a', contentX, currentY, { align: 'center', width: contentWidth });
+
+    // Nome do Aluno (Linha e Texto)
+    currentY += 40;
+    doc.moveTo(contentX + 20, currentY + 35).lineTo(contentX + contentWidth - 20, currentY + 35).strokeColor('#d4c8be').stroke();
+    doc.font('Times-Bold').fontSize(36).fillColor('#5d6d5f')
+        .text(studentName, contentX, currentY, { align: 'center', width: contentWidth });
+
+    currentY += 60;
+    // Texto de Conclusão
+    doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica')
+        .text('Por ter concluído com sucesso o curso de ', contentX, currentY, { continued: true, align: 'center', width: contentWidth })
+        .font('Helvetica-Bold').text('SABERES DA FLORESTA: Formação Completa', { continued: true })
+        .font('Helvetica').text(', demonstrando dedicação e competência nas práticas de herborista.');
+
+    currentY += 50;
+    const hoje = new Date().toLocaleDateString('pt-BR');
+    doc.text(`Concluído em: ${hoje}`, contentX, currentY, { align: 'center', width: contentWidth });
+
+    // --- 5. ASSINATURAS ---
+    const sigY = height - 120;
+    const sigWidth = 150;
+    const sigGap = 50;
+
+    const sig1X = centerX - sigWidth - (sigGap / 2);
+    const sig2X = centerX + (sigGap / 2);
+
+    // Assinatura 1: M.Luiza
+    try {
+        const sig1 = path.join(assetsDir, 'M.Luiza.png');
+        if (fs.existsSync(sig1)) doc.image(sig1, sig1X, sigY - 40, { width: 120, align: 'center' });
+    } catch (e) { }
+    doc.moveTo(sig1X, sigY).lineTo(sig1X + sigWidth, sigY).strokeColor('#4a4a4a').stroke();
+    doc.fontSize(10).fillColor('#888').font('Helvetica').text('INSTRUTORA RESPONSÁVEL', sig1X, sigY + 5, { width: sigWidth, align: 'center' });
+
+    // Assinatura 2: J.Padilha
+    try {
+        const sig2 = path.join(assetsDir, 'J.padilha.png');
+        if (fs.existsSync(sig2)) doc.image(sig2, sig2X + 20, sigY - 40, { width: 100, align: 'center' });
+    } catch (e) { }
+    doc.moveTo(sig2X, sigY).lineTo(sig2X + sigWidth, sigY).stroke();
+    doc.text('DIREÇÃO DA ESCOLA', sig2X, sigY + 5, { width: sigWidth, align: 'center' });
+
     doc.end();
 });
 
