@@ -471,7 +471,7 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
     res.json(resultado);
 });
 
-// --- ROTA DE GERAÇÃO DE CERTIFICADO (PDFKIT - LAYOUT PREMIUM HARDCODED FIXED) ---
+// --- ROTA DE GERAÇÃO DE CERTIFICADO (PDFKIT - LAYOUT PREMIUM HARDCODED FIXED PLUS) ---
 app.post('/gerar-certificado', authenticateToken, async (req, res) => {
     const { safeStudentName } = req.body;
     const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
@@ -594,7 +594,10 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
 
         // Linha abaixo do nome
         const nameH = doc.heightOfString(studentName, { width: CONTENT_WIDTH });
-        const lineY = cursorY + nameH + 10;
+
+        // FIX: Proximidade Extrema (2px)
+        const lineY = cursorY + nameH + 2;
+
         const lineW = 400;
         doc.moveTo(CENTER_X - (lineW / 2), lineY)
             .lineTo(CENTER_X + (lineW / 2), lineY)
@@ -641,7 +644,7 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
             align: 'center'
         });
 
-        // --- ASSINATURAS (Ajustado Y para ficar rente) ---
+        // --- ASSINATURAS (Ajustado Y para ficar rente AO EXTREMO) ---
         const SIG_Y = HEIGHT - 100;
         const SIG_BOX_W = 180;
         const SIG_GAP = 60;
@@ -649,19 +652,19 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
         const SIG_1_X = CENTER_X - SIG_BOX_W - (SIG_GAP / 2);
         const SIG_2_X = CENTER_X + (SIG_GAP / 2);
 
-        // Assinatura 1 - Lowered from -50 to -35
+        // Assinatura 1 - Lowered from -35 to -10 (Sits ON the line)
         try {
             const s1 = path.join(assetsDir, 'M.Luiza.png');
-            if (fs.existsSync(s1)) doc.image(s1, SIG_1_X + 40, SIG_Y - 35, { width: 100 });
+            if (fs.existsSync(s1)) doc.image(s1, SIG_1_X + 40, SIG_Y - 10, { width: 100 });
         } catch (e) { }
 
         doc.moveTo(SIG_1_X, SIG_Y).lineTo(SIG_1_X + SIG_BOX_W, SIG_Y).strokeColor('#4a4a4a').stroke();
         doc.fontSize(12).font('Helvetica').text('INSTRUTORA RESPONSÁVEL', SIG_1_X, SIG_Y + 10, { width: SIG_BOX_W, align: 'center' });
 
-        // Assinatura 2 - Lowered from -50 to -35
+        // Assinatura 2 - Lowered from -35 to -10
         try {
             const s2 = path.join(assetsDir, 'J.padilha.png');
-            if (fs.existsSync(s2)) doc.image(s2, SIG_2_X + 30, SIG_Y - 35, { width: 120 });
+            if (fs.existsSync(s2)) doc.image(s2, SIG_2_X + 30, SIG_Y - 10, { width: 120 });
         } catch (e) { }
 
         doc.moveTo(SIG_2_X, SIG_Y).lineTo(SIG_2_X + SIG_BOX_W, SIG_Y).stroke();
