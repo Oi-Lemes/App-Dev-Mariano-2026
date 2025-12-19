@@ -3,21 +3,25 @@ import axios from 'axios';
 import 'dotenv/config';
 
 // --- CONFIGURAÇÃO ---
-const WEBHOOK_URL = 'http://localhost:3001/webhook/paradise';
-const PRODUCT_HASH = process.env.PARADISE_PRODUCT_HASH || 'prod_372117ff2ba365a1'; // O hash configurado
+// --- CONFIGURAÇÃO ---
+const WEBHOOK_URL = 'https://areamembrosplantascompletinho.onrender.com/webhook/paradise';
+// IMPORTANT: Use o hash que está no seu .env ou que você configurou no Render
+const PRODUCT_HASH = process.env.PARADISE_PRODUCT_HASH || 'prod_372117ff2ba365a1';
 
 // --- DADOS DO TESTE ---
-// Mude o telefone para o SEU número de teste
+// ⚠️ COLOQUE SEU TELFONE ABAIXO PARA LIBERAR O ACESSO NO SITE DE VERDADE ⚠️
+const MEU_TELEFONE = '11999999999'; // <-- DIGITE SEU NÚMERO AQUI (IGUAL AO DO LOGIN)
+
 const TEST_PAYLOAD = {
     event: 'purchase.approved',
     product: {
-        hash: PRODUCT_HASH, // O hash correto
-        name: 'Curso Segredos da Floresta'
+        hash: PRODUCT_HASH,
+        name: 'Curso Segredos da Floresta (Teste Manual)'
     },
     client: {
-        name: 'Cliente Teste Local',
-        email: 'teste@local.com',
-        phone: '11999999999', // <--- SEU WHATSAPP AQUI
+        name: 'Cliente Teste Manual',
+        email: 'teste@manual.com',
+        phone: MEU_TELEFONE,
         cpf: '000.000.000-00'
     }
 };

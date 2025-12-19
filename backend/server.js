@@ -168,8 +168,10 @@ app.post('/webhook/paradise', async (req, res) => {
 
     try {
         const eventType = event.event || event.status;
+        // Tenta pegar de várias formas
         const product = event.product || {};
-        const incomingHash = product.hash || product.id || event.product_hash;
+        const tracking = event.tracking || {};
+        const incomingHash = product.hash || product.id || event.product_hash || tracking.product_hash;
         const client = event.client || event.customer || {}; // Garante que client existe
 
         console.log(`[WEBHOOK] Evento: ${eventType} | Produto: ${incomingHash}`);
@@ -182,7 +184,7 @@ app.post('/webhook/paradise', async (req, res) => {
             return res.status(200).send('Ignorado: Produto diferente');
         }
 
-        if (eventType === 'purchase.approved' || eventType === 'paid') {
+        if (eventType === 'purchase.approved' || eventType === 'paid' || eventType === 'approved') {
             const email = client.email;
             const name = client.name;
             const phone = client.phone ? client.phone.replace(/\D/g, '') : null;
