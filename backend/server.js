@@ -413,6 +413,64 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
     res.json(resultado);
 });
 
+// --- ROTA DE CORREÇÃO (SEED) ---
+// Executa a sincronização dos MOCK_MODULOS com o Banco de Dados Real
+// Isso resolve o erro "Foreign key constraint violated" ao marcar aulas.
+app.get('/fix-content-db', async (req, res) => {
+    try {
+        let log = [];
+        for (const mod of MOCK_MODULOS) {
+            // Cria/Atualiza Módulo
+            await prisma.modulo.upsert({
+                where: { id: mod.id },
+                update: {
+                    nome: mod.nome,
+                    description: mod.description,
+                    ordem: mod.ordem,
+                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id // Fallback img
+                },
+                create: {
+                    id: mod.id,
+                    nome: mod.nome,
+                    description: mod.description,
+                    ordem: mod.ordem,
+                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id
+                }
+            });
+            log.push(`Módulo ${mod.id} sincronizado.`);
+
+            // Cria/Atualiza Aulas
+            if (mod.aulas && mod.aulas.length > 0) {
+                for (const aula of mod.aulas) {
+                    await prisma.aula.upsert({
+                        where: { id: aula.id },
+                        update: {
+                            nome: aula.nome,
+                            descricao: `Conteúdo da aula ${aula.nome}`,
+                            videoUrl: aula.videoUrl,
+                            ordem: aula.ordem,
+                            moduloId: mod.id
+                        },
+                        create: {
+                            id: aula.id,
+                            nome: aula.nome,
+                            descricao: `Conteúdo da aula ${aula.nome}`,
+                            videoUrl: aula.videoUrl,
+                            ordem: aula.ordem,
+                            moduloId: mod.id
+                        }
+                    });
+                }
+                log.push(`  -> ${mod.aulas.length} aulas sincronizadas.`);
+            }
+        }
+        res.send(`<h1>Sucesso! Banco de Dados Atualizado.</h1><pre>${log.join('\n')}</pre>`);
+    } catch (error) {
+        console.error("Erro no seed:", error);
+        res.status(500).send("Erro ao sincronizar: " + error.message);
+    }
+});
+
 
 // Inicia o servidor
 app.listen(PORT, () => {
