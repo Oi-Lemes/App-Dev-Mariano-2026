@@ -166,7 +166,13 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
                     👤
                   </div>
                 </div>
-                <h2 className="text-xl font-serif text-amber-50 tracking-wide font-thin italic mb-2">{userLoading ? '...' : user?.name || 'Membro VIP'}</h2>
+                <h2 className="text-xl font-serif text-amber-50 tracking-wide font-thin italic mb-2">
+                  {userLoading
+                    ? '...'
+                    : (user?.name && user.name !== 'Aluno Novo')
+                      ? user.name.toLowerCase().split(' ').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')
+                      : 'Membro VIP'}
+                </h2>
 
                 {/* Roda de Progresso (Restaurada) */}
                 <div className="mb-2">
