@@ -135,7 +135,6 @@ const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-secreto';
 const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
 
 app.use(express.json());
-app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Servir imagens estáticas
 
 
 // Configuração do CORS
@@ -162,6 +161,8 @@ app.use(cors({
     },
     optionsSuccessStatus: 200
 }));
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Servir imagens estáticas (DEPOIS DO CORS)
 
 // --- MIDDLEWARE DE AUTH ---
 const authenticateToken = (req, res, next) => {
