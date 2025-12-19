@@ -531,35 +531,36 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
     } catch (e) { }
 
     // START FLOW
-    doc.y = 80;
+    const topMargin = 50; // Compact Start
+    doc.y = topMargin;
 
     // School Name
-    doc.font('Times-Bold').fontSize(22).fillColor('#5d6d5f')
+    doc.font('Times-Bold').fontSize(18).fillColor('#5d6d5f')
         .text('SABERES DA FLORESTA', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 2 });
-
-    doc.moveDown(1.5);
-
-    // Title
-    doc.font('Times-Roman').fontSize(48).fillColor('#333')
-        .text('Certificado de Conclusão', contentX, doc.y, { align: 'center', width: contentWidth });
 
     doc.moveDown(0.5);
 
+    // Title
+    doc.font('Times-Roman').fontSize(42).fillColor('#333')
+        .text('Certificado de Conclusão', contentX, doc.y, { align: 'center', width: contentWidth });
+
+    doc.moveDown(0.25);
+
     // Subtitle
-    doc.fontSize(14).fillColor('#888').font('Helvetica')
+    doc.fontSize(12).fillColor('#888').font('Helvetica')
         .text('CERTIFICATE OF COMPLETION', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 3 });
-
-    doc.moveDown(2);
-
-    // "This certificate is granted to"
-    doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica')
-        .text('Este certificado é concedido a', contentX, doc.y, { align: 'center', width: contentWidth });
 
     doc.moveDown(1.5);
 
+    // "This certificate is granted to"
+    doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica')
+        .text('Este certificado é concedido a', contentX, doc.y, { align: 'center', width: contentWidth });
+
+    doc.moveDown(1);
+
     // STUDENT NAME
     const startNameY = doc.y;
-    doc.font('Times-Bold').fontSize(36).fillColor('#5d6d5f')
+    doc.font('Times-Bold').fontSize(32).fillColor('#5d6d5f')
         .text(studentName, contentX, doc.y, { align: 'center', width: contentWidth });
 
     // Underline relative to name (dynamic height)
@@ -567,23 +568,23 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
     const lineY = startNameY + nameHeight + 5;
     doc.moveTo(contentX + 20, lineY).lineTo(contentX + contentWidth - 20, lineY).strokeColor('#d4c8be').stroke();
 
-    doc.y = lineY + 30; // Force move down after line
+    doc.y = lineY + 20;
 
     // Completion Text
-    doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica');
+    doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica');
     doc.text('Por ter concluído com sucesso o curso de ', contentX, doc.y, { continued: true, align: 'center', width: contentWidth })
         .font('Helvetica-Bold').text('SABERES DA FLORESTA: Formação Completa', { continued: true })
         .font('Helvetica').text(', demonstrando dedicação e competência nas práticas de herborista.', { continued: false });
 
-    doc.moveDown(2);
+    doc.moveDown(1.5);
 
     // Date
     const hoje = new Date().toLocaleDateString('pt-BR');
     doc.text(`Concluído em: ${hoje}`, contentX, doc.y, { align: 'center', width: contentWidth });
 
     // --- 5. SIGNATURES ---
-    // Fixed at bottom to avoid floating if text is short
-    const sigY = height - 100;
+    // Dynamic positioning: Ensure it's at least at height-100, BUT if text pushed further, move down (+30 safe distance)
+    const sigY = Math.max(height - 100, doc.y + 40);
     const sigWidth = 150;
     const sigGap = 50;
 
