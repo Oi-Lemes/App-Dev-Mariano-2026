@@ -569,7 +569,13 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
             // 4. Lançar o Puppeteer e gerar PDF
             const browser = await puppeteer.launch({
                 headless: 'new',
-                args: ['--no-sandbox', '--disable-setuid-sandbox'] // Necessário para alguns ambientes serverless/docker
+                args: [
+                    '--no-sandbox',
+                    '--disable-setuid-sandbox',
+                    '--disable-dev-shm-usage', // Otimização para containers
+                    '--disable-gpu'
+                ],
+                ignoreDefaultArgs: ['--disable-extensions']
             });
             const page = await browser.newPage();
 
@@ -596,70 +602,67 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
         }
     });
 
-    doc.end();
-});
+    // --- ROTA DE CORREÇÃO (SEED) ---
+    // Executa a sincronização dos MOCK_MODULOS com o Banco de Dados Real
+    // Isso resolve o erro "Foreign key constraint violated" ao marcar aulas.
+    app.get('/fix-content-db', async (req, res) => {
+        try {
+            let log = [];
+            for (const mod of MOCK_MODULOS) {
+                // Cria/Atualiza Módulo
+                await prisma.modulo.upsert({
+                    where: { id: mod.id },
+                    update: {
+                        nome: mod.nome,
+                        description: mod.description,
+                        ordem: mod.ordem,
+                        imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id // Fallback img
+                    },
+                    create: {
+                        id: mod.id,
+                        nome: mod.nome,
+                        description: mod.description,
+                        ordem: mod.ordem,
+                        imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id
+                    }
+                });
+                log.push(`Módulo ${mod.id} sincronizado.`);
 
-// --- ROTA DE CORREÇÃO (SEED) ---
-// Executa a sincronização dos MOCK_MODULOS com o Banco de Dados Real
-// Isso resolve o erro "Foreign key constraint violated" ao marcar aulas.
-app.get('/fix-content-db', async (req, res) => {
-    try {
-        let log = [];
-        for (const mod of MOCK_MODULOS) {
-            // Cria/Atualiza Módulo
-            await prisma.modulo.upsert({
-                where: { id: mod.id },
-                update: {
-                    nome: mod.nome,
-                    description: mod.description,
-                    ordem: mod.ordem,
-                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id // Fallback img
-                },
-                create: {
-                    id: mod.id,
-                    nome: mod.nome,
-                    description: mod.description,
-                    ordem: mod.ordem,
-                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id
+                // Cria/Atualiza Aulas
+                if (mod.aulas && mod.aulas.length > 0) {
+                    for (const aula of mod.aulas) {
+                        await prisma.aula.upsert({
+                            where: { id: aula.id },
+                            update: {
+                                nome: aula.nome,
+                                descricao: `Conteúdo da aula ${aula.nome}`,
+                                videoUrl: aula.videoUrl,
+                                ordem: aula.ordem,
+                                moduloId: mod.id
+                            },
+                            create: {
+                                id: aula.id,
+                                nome: aula.nome,
+                                descricao: `Conteúdo da aula ${aula.nome}`,
+                                videoUrl: aula.videoUrl,
+                                ordem: aula.ordem,
+                                moduloId: mod.id
+                            }
+                        });
+                    }
+                    log.push(`  -> ${mod.aulas.length} aulas sincronizadas.`);
                 }
-            });
-            log.push(`Módulo ${mod.id} sincronizado.`);
-
-            // Cria/Atualiza Aulas
-            if (mod.aulas && mod.aulas.length > 0) {
-                for (const aula of mod.aulas) {
-                    await prisma.aula.upsert({
-                        where: { id: aula.id },
-                        update: {
-                            nome: aula.nome,
-                            descricao: `Conteúdo da aula ${aula.nome}`,
-                            videoUrl: aula.videoUrl,
-                            ordem: aula.ordem,
-                            moduloId: mod.id
-                        },
-                        create: {
-                            id: aula.id,
-                            nome: aula.nome,
-                            descricao: `Conteúdo da aula ${aula.nome}`,
-                            videoUrl: aula.videoUrl,
-                            ordem: aula.ordem,
-                            moduloId: mod.id
-                        }
-                    });
-                }
-                log.push(`  -> ${mod.aulas.length} aulas sincronizadas.`);
             }
+            res.send(`<h1>Sucesso! Banco de Dados Atualizado.</h1><pre>${log.join('\n')}</pre>`);
+        } catch (error) {
+            console.error("Erro no seed:", error);
+            res.status(500).send("Erro ao sincronizar: " + error.message);
         }
-        res.send(`<h1>Sucesso! Banco de Dados Atualizado.</h1><pre>${log.join('\n')}</pre>`);
-    } catch (error) {
-        console.error("Erro no seed:", error);
-        res.status(500).send("Erro ao sincronizar: " + error.message);
-    }
-});
+    });
 
 
-// Inicia o servidor
-app.listen(PORT, () => {
-    console.log(`\n🚀 SERVIDOR REAL (PRISMA) RODANDO NA PORTA ${PORT}`);
-    console.log(`💳 Webhook Paradise ativo em /webhook/paradise`);
-});
+    // Inicia o servidor
+    app.listen(PORT, () => {
+        console.log(`\n🚀 SERVIDOR REAL (PRISMA) RODANDO NA PORTA ${PORT}`);
+        console.log(`💳 Webhook Paradise ativo em /webhook/paradise`);
+    });
