@@ -471,201 +471,195 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
     res.json(resultado);
 });
 
-// --- ROTA DE GERAÇÃO DE CERTIFICADO (DESIGN ORIGINAL RESTAURADO) ---
-app.post('/gerar-certificado', authenticateToken, (req, res) => {
+// --- ROTA DE GERAÇÃO DE CERTIFICADO (PDFKIT - VERSÃO LEVE & ESTÁVEL) ---
+// Substitui o Puppeteer mudando para PDFKit para garantir deploy no Render Gratuito
+app.post('/gerar-certificado', authenticateToken, async (req, res) => {
     const { safeStudentName } = req.body;
     const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
 
-    const doc = new PDFDocument({
-        layout: 'landscape',
-        size: 'A4',
-        margin: 0 // Margem zero para cobrir tudo
-    });
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=certificado_${req.user.id}.pdf`);
-    doc.pipe(res);
-
-    // Dimensões A4 Paisagem: ~841.89 x 595.28 points
-    const width = doc.page.width;
-    const height = doc.page.height;
-    const sidebarWidth = width * 0.33; // 33% para a barra lateral
-
-    // --- 1. FUNDO PRINCIPAL (Beige) ---
-    doc.rect(0, 0, width, height).fill('#F6F1E9');
-
-    // --- 2. BARRA LATERAL (Cinza/Beige Escuro) ---
-    doc.rect(0, 0, sidebarWidth, height).fill('#e9e4de');
-
-    // --- 3. SIDEBAR IMAGE ---
-    const assetsDir = path.join(__dirname, 'assets', 'cert');
     try {
-        const bgImage = path.join(assetsDir, 'ervas_fallback.jpg');
-        if (fs.existsSync(bgImage)) {
-            doc.save();
-            doc.rect(0, 0, sidebarWidth, height).clip();
-            doc.image(bgImage, 0, 0, {
-                cover: [sidebarWidth, height],
-                align: 'center',
-                valign: 'center'
-            });
-            doc.restore();
-            // Overlay para ofuscar
-            doc.rect(0, 0, sidebarWidth, height).fillOpacity(0.3).fill('#e9e4de').fillOpacity(1);
-        }
-    } catch (e) {
-        console.error("Erro ao carregar imagem:", e);
-    }
+        const doc = new PDFDocument({
+            layout: 'landscape',
+            size: 'A4',
+            margin: 0
+        });
 
-    // --- 4. MAIN CONTENT ---
-    const contentX = sidebarWidth + 50;
-    const contentWidth = width - sidebarWidth - 100;
-    const centerX = contentX + (contentWidth / 2);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `attachment; filename=certificado_${req.user.id}.pdf`);
+        doc.pipe(res);
 
-    // Medal
-    try {
-        const sealPath = path.join(assetsDir, 'medalha.png');
-        if (fs.existsSync(sealPath)) {
-            doc.image(sealPath, width - 120, 30, { width: 80 });
-        }
-    } catch (e) { }
+        const width = 841.89;
+        const height = 595.28;
 
-    // --- ROTA DE GERAÇÃO DE CERTIFICADO (DESIGN ORIGINAL - PUPPETEER) ---
-    // Utiliza o template HTML original para garantir fidelidade 100% (fontes, layout)
-    import puppeteer from 'puppeteer';
+        // 1. SIDEBAR
+        const assetsDir = path.join(__dirname, 'gerador_certificado', 'img');
 
-    app.post('/gerar-certificado', authenticateToken, async (req, res) => {
-        const { safeStudentName } = req.body;
-        const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
-        const courseName = 'SABERES DA FLORESTA: Formação Completa';
-        const completionDate = new Date().toLocaleDateString('pt-BR');
+        const possibleImages = [
+            path.join(assetsDir, 'ervas_fallback.jpg'),
+            path.join(assetsDir, 'ervas.png'),
+            path.join(__dirname, 'assets', 'cert', 'ervas_fallback.jpg')
+        ];
 
-        try {
-            // 1. Ler o template HTML original
-            const templatePath = path.join(__dirname, 'gerador_certificado', 'template.html');
-            let htmlContent = fs.readFileSync(templatePath, 'utf8');
+        let finalImg = possibleImages.find(p => fs.existsSync(p));
 
-            // 2. Substituir placeholders (Jinja2 style {{ var }} -> Valor)
-            htmlContent = htmlContent
-                .replace('{{ student_name }}', studentName)
-                .replace('{{ course_name }}', courseName)
-                .replace('{{ completion_date }}', completionDate);
-
-            // 3. Resolver caminhos das imagens para Base64 ou Absoluto para o Puppeteer carregar
-            // O template usa "img/arquivo.png". Vamos ajustar para file:///...
-            const assetsDir = path.join(__dirname, 'gerador_certificado', 'img'); // Pasta original do template
-            // Função auxiliar para substituir src relativo
-            const replaceImageSrc = (filename) => {
-                const absPath = path.join(assetsDir, filename).replace(/\\/g, '/');
-                return `file:///${absPath}`;
-            };
-
-            htmlContent = htmlContent
-                .replace('src="img/ervas.webp"', `src="${replaceImageSrc('ervas.webp')}"`)
-                .replace('src="img/medalha.png"', `src="${replaceImageSrc('medalha.png')}"`)
-                .replace('src="img/M.Luiza.png"', `src="${replaceImageSrc('M.Luiza.png')}"`)
-                .replace('src="img/J.padilha.png"', `src="${replaceImageSrc('J.padilha.png')}"`);
-
-            // 4. Lançar o Puppeteer e gerar PDF
-            console.log("Iniciando Puppeteer...");
-            const browser = await puppeteer.launch({
-                headless: 'new',
-                args: [
-                    '--no-sandbox',
-                    '--disable-setuid-sandbox',
-                    '--disable-dev-shm-usage', // Otimização para containers
-                    '--disable-gpu',
-                    '--single-process', // SALVA MEMÓRIA: Crucial para Render Free
-                    '--no-zygote'
-                ],
-                ignoreDefaultArgs: ['--disable-extensions']
-            });
-            const page = await browser.newPage();
-
-            // Define o conteúdo e espera carregar (networkidle0 garante que fontes/imagens carregaram)
-            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
-
-            const pdfBuffer = await page.pdf({
-                format: 'A4',
-                landscape: true,
-                printBackground: true, // Importante para imprimir cores de fundo e imagens
-                margin: { top: 0, right: 0, bottom: 0, left: 0 } // Sem margem extra, o CSS define
-            });
-
-            await browser.close();
-
-            // 5. Enviar o PDF
-            res.setHeader('Content-Type', 'application/pdf');
-            res.setHeader('Content-Disposition', `attachment; filename=certificado_${req.user.id}.pdf`);
-            res.send(pdfBuffer);
-
-        } catch (error) {
-            console.error("Erro ao gerar certificado via Puppeteer:", error);
-            res.status(500).json({ error: 'Erro ao gerar certificado.' });
-        }
-    });
-
-    // --- ROTA DE CORREÇÃO (SEED) ---
-    // Executa a sincronização dos MOCK_MODULOS com o Banco de Dados Real
-    // Isso resolve o erro "Foreign key constraint violated" ao marcar aulas.
-    app.get('/fix-content-db', async (req, res) => {
-        try {
-            let log = [];
-            for (const mod of MOCK_MODULOS) {
-                // Cria/Atualiza Módulo
-                await prisma.modulo.upsert({
-                    where: { id: mod.id },
-                    update: {
-                        nome: mod.nome,
-                        description: mod.description,
-                        ordem: mod.ordem,
-                        imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id // Fallback img
-                    },
-                    create: {
-                        id: mod.id,
-                        nome: mod.nome,
-                        description: mod.description,
-                        ordem: mod.ordem,
-                        imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id
-                    }
-                });
-                log.push(`Módulo ${mod.id} sincronizado.`);
-
-                // Cria/Atualiza Aulas
-                if (mod.aulas && mod.aulas.length > 0) {
-                    for (const aula of mod.aulas) {
-                        await prisma.aula.upsert({
-                            where: { id: aula.id },
-                            update: {
-                                nome: aula.nome,
-                                descricao: `Conteúdo da aula ${aula.nome}`,
-                                videoUrl: aula.videoUrl,
-                                ordem: aula.ordem,
-                                moduloId: mod.id
-                            },
-                            create: {
-                                id: aula.id,
-                                nome: aula.nome,
-                                descricao: `Conteúdo da aula ${aula.nome}`,
-                                videoUrl: aula.videoUrl,
-                                ordem: aula.ordem,
-                                moduloId: mod.id
-                            }
-                        });
-                    }
-                    log.push(`  -> ${mod.aulas.length} aulas sincronizadas.`);
-                }
+        if (finalImg) {
+            try {
+                doc.image(finalImg, 0, 0, { width: 280, height: height, fit: [280, height], align: 'center', valign: 'center' });
+            } catch (e) {
+                doc.rect(0, 0, 280, height).fill('#e9e4de');
             }
-            res.send(`<h1>Sucesso! Banco de Dados Atualizado.</h1><pre>${log.join('\n')}</pre>`);
-        } catch (error) {
-            console.error("Erro no seed:", error);
-            res.status(500).send("Erro ao sincronizar: " + error.message);
+        } else {
+            doc.rect(0, 0, 280, height).fill('#e9e4de');
         }
-    });
+
+        // 2. CONTEÚDO
+        const contentX = 320;
+        const contentWidth = width - contentX - 50;
+        const centerX = contentX + (contentWidth / 2);
+        const topMargin = 50;
+        doc.y = topMargin;
+
+        // School Name
+        doc.font('Times-Bold').fontSize(18).fillColor('#5d6d5f')
+            .text('SABERES DA FLORESTA', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 2 });
+
+        doc.moveDown(0.5);
+
+        // Title
+        doc.font('Times-Roman').fontSize(42).fillColor('#333')
+            .text('Certificado de Conclusão', contentX, doc.y, { align: 'center', width: contentWidth });
+
+        doc.moveDown(0.25);
+
+        // Subtitle
+        doc.fontSize(12).fillColor('#888').font('Helvetica')
+            .text('CERTIFICATE OF COMPLETION', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 3 });
+
+        doc.moveDown(1.5);
+
+        // "This certificate is granted to"
+        doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica')
+            .text('Este certificado é concedido a', contentX, doc.y, { align: 'center', width: contentWidth });
+
+        doc.moveDown(1);
+
+        // STUDENT NAME
+        const startNameY = doc.y;
+        doc.font('Times-Bold').fontSize(32).fillColor('#5d6d5f')
+            .text(studentName, contentX, doc.y, { align: 'center', width: contentWidth });
+
+        // Underline
+        const nameHeight = doc.heightOfString(studentName, { width: contentWidth });
+        const lineY = startNameY + nameHeight + 5;
+        doc.moveTo(contentX + 20, lineY).lineTo(contentX + contentWidth - 20, lineY).strokeColor('#d4c8be').stroke();
+
+        doc.y = lineY + 20;
+
+        // Completion Text
+        doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica');
+        doc.text('Por ter concluído com sucesso o curso de ', contentX, doc.y, { continued: true, align: 'center', width: contentWidth })
+            .font('Helvetica-Bold').text('SABERES DA FLORESTA: Formação Completa', { continued: true })
+            .font('Helvetica').text(', demonstrando dedicação e competência nas práticas de herborista.', { continued: false });
+
+        doc.moveDown(1.5);
+
+        // Date
+        const hoje = new Date().toLocaleDateString('pt-BR');
+        doc.text(`Concluído em: ${hoje}`, contentX, doc.y, { align: 'center', width: contentWidth });
+
+        // --- SIGNATURES ---
+        const sigY = Math.max(height - 100, doc.y + 40);
+        const sigWidth = 150;
+        const sigGap = 50;
+
+        const sig1X = centerX - sigWidth - (sigGap / 2);
+        const sig2X = centerX + (sigGap / 2);
+
+        // Sig 1
+        try {
+            const sig1 = path.join(assetsDir, 'M.Luiza.png');
+            if (fs.existsSync(sig1)) doc.image(sig1, sig1X, sigY - 50, { width: 120, align: 'center' });
+        } catch (e) { }
+        doc.moveTo(sig1X, sigY).lineTo(sig1X + sigWidth, sigY).strokeColor('#4a4a4a').stroke();
+        doc.fontSize(10).fillColor('#888').font('Helvetica').text('INSTRUTORA RESPONSÁVEL', sig1X, sigY + 5, { width: sigWidth, align: 'center' });
+
+        // Sig 2
+        try {
+            const sig2 = path.join(assetsDir, 'J.padilha.png');
+            if (fs.existsSync(sig2)) doc.image(sig2, sig2X + 20, sigY - 50, { width: 100, align: 'center' });
+        } catch (e) { }
+        doc.moveTo(sig2X, sigY).lineTo(sig2X + sigWidth, sigY).stroke();
+        doc.text('DIREÇÃO DA ESCOLA', sig2X, sigY + 5, { width: sigWidth, align: 'center' });
+
+        doc.end();
+
+    } catch (error) {
+        console.error("Erro ao gerar certificado via PDFKit:", error);
+        res.status(500).json({ error: 'Erro ao gerar certificado.' });
+    }
+});
+
+// --- ROTA DE CORREÇÃO (SEED) ---
+// Executa a sincronização dos MOCK_MODULOS com o Banco de Dados Real
+// Isso resolve o erro "Foreign key constraint violated" ao marcar aulas.
+app.get('/fix-content-db', async (req, res) => {
+    try {
+        let log = [];
+        for (const mod of MOCK_MODULOS) {
+            // Cria/Atualiza Módulo
+            await prisma.modulo.upsert({
+                where: { id: mod.id },
+                update: {
+                    nome: mod.nome,
+                    description: mod.description,
+                    ordem: mod.ordem,
+                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id // Fallback img
+                },
+                create: {
+                    id: mod.id,
+                    nome: mod.nome,
+                    description: mod.description,
+                    ordem: mod.ordem,
+                    imagem: 'https://placehold.co/600x400/10b981/ffffff?text=Modulo+' + mod.id
+                }
+            });
+            log.push(`Módulo ${mod.id} sincronizado.`);
+
+            // Cria/Atualiza Aulas
+            if (mod.aulas && mod.aulas.length > 0) {
+                for (const aula of mod.aulas) {
+                    await prisma.aula.upsert({
+                        where: { id: aula.id },
+                        update: {
+                            nome: aula.nome,
+                            descricao: `Conteúdo da aula ${aula.nome}`,
+                            videoUrl: aula.videoUrl,
+                            ordem: aula.ordem,
+                            moduloId: mod.id
+                        },
+                        create: {
+                            id: aula.id,
+                            nome: aula.nome,
+                            descricao: `Conteúdo da aula ${aula.nome}`,
+                            videoUrl: aula.videoUrl,
+                            ordem: aula.ordem,
+                            moduloId: mod.id
+                        }
+                    });
+                }
+                log.push(`  -> ${mod.aulas.length} aulas sincronizadas.`);
+            }
+        }
+        res.send(`<h1>Sucesso! Banco de Dados Atualizado.</h1><pre>${log.join('\n')}</pre>`);
+    } catch (error) {
+        console.error("Erro no seed:", error);
+        res.status(500).send("Erro ao sincronizar: " + error.message);
+    }
+});
 
 
-    // Inicia o servidor
-    app.listen(PORT, () => {
-        console.log(`\n🚀 SERVIDOR REAL (PRISMA) RODANDO NA PORTA ${PORT}`);
-        console.log(`💳 Webhook Paradise ativo em /webhook/paradise`);
-    });
+// Inicia o servidor
+app.listen(PORT, () => {
+    console.log(`\n🚀 SERVIDOR REAL (PRISMA) RODANDO NA PORTA ${PORT}`);
+    console.log(`💳 Webhook Paradise ativo em /webhook/paradise`);
+});
