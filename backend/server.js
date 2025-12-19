@@ -530,82 +530,71 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
         }
     } catch (e) { }
 
-    // START FLOW
-    const topMargin = 50; // Compact Start
-    doc.y = topMargin;
+    // --- ROTA DE GERAÇÃO DE CERTIFICADO (DESIGN ORIGINAL - PUPPETEER) ---
+    // Utiliza o template HTML original para garantir fidelidade 100% (fontes, layout)
+    import puppeteer from 'puppeteer';
 
-    // School Name
-    doc.font('Times-Bold').fontSize(18).fillColor('#5d6d5f')
-        .text('SABERES DA FLORESTA', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 2 });
+    app.post('/gerar-certificado', authenticateToken, async (req, res) => {
+        const { safeStudentName } = req.body;
+        const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
+        const courseName = 'SABERES DA FLORESTA: Formação Completa';
+        const completionDate = new Date().toLocaleDateString('pt-BR');
 
-    doc.moveDown(0.5);
+        try {
+            // 1. Ler o template HTML original
+            const templatePath = path.join(__dirname, 'gerador_certificado', 'template.html');
+            let htmlContent = fs.readFileSync(templatePath, 'utf8');
 
-    // Title
-    doc.font('Times-Roman').fontSize(42).fillColor('#333')
-        .text('Certificado de Conclusão', contentX, doc.y, { align: 'center', width: contentWidth });
+            // 2. Substituir placeholders (Jinja2 style {{ var }} -> Valor)
+            htmlContent = htmlContent
+                .replace('{{ student_name }}', studentName)
+                .replace('{{ course_name }}', courseName)
+                .replace('{{ completion_date }}', completionDate);
 
-    doc.moveDown(0.25);
+            // 3. Resolver caminhos das imagens para Base64 ou Absoluto para o Puppeteer carregar
+            // O template usa "img/arquivo.png". Vamos ajustar para file:///...
+            const assetsDir = path.join(__dirname, 'gerador_certificado', 'img'); // Pasta original do template
+            // Função auxiliar para substituir src relativo
+            const replaceImageSrc = (filename) => {
+                const absPath = path.join(assetsDir, filename).replace(/\\/g, '/');
+                return `file:///${absPath}`;
+            };
 
-    // Subtitle
-    doc.fontSize(12).fillColor('#888').font('Helvetica')
-        .text('CERTIFICATE OF COMPLETION', contentX, doc.y, { align: 'center', width: contentWidth, characterSpacing: 3 });
+            htmlContent = htmlContent
+                .replace('src="img/ervas.webp"', `src="${replaceImageSrc('ervas.webp')}"`)
+                .replace('src="img/medalha.png"', `src="${replaceImageSrc('medalha.png')}"`)
+                .replace('src="img/M.Luiza.png"', `src="${replaceImageSrc('M.Luiza.png')}"`)
+                .replace('src="img/J.padilha.png"', `src="${replaceImageSrc('J.padilha.png')}"`);
 
-    doc.moveDown(1.5);
+            // 4. Lançar o Puppeteer e gerar PDF
+            const browser = await puppeteer.launch({
+                headless: 'new',
+                args: ['--no-sandbox', '--disable-setuid-sandbox'] // Necessário para alguns ambientes serverless/docker
+            });
+            const page = await browser.newPage();
 
-    // "This certificate is granted to"
-    doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica')
-        .text('Este certificado é concedido a', contentX, doc.y, { align: 'center', width: contentWidth });
+            // Define o conteúdo e espera carregar (networkidle0 garante que fontes/imagens carregaram)
+            await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
 
-    doc.moveDown(1);
+            const pdfBuffer = await page.pdf({
+                format: 'A4',
+                landscape: true,
+                printBackground: true, // Importante para imprimir cores de fundo e imagens
+                margin: { top: 0, right: 0, bottom: 0, left: 0 } // Sem margem extra, o CSS define
+            });
 
-    // STUDENT NAME
-    const startNameY = doc.y;
-    doc.font('Times-Bold').fontSize(32).fillColor('#5d6d5f')
-        .text(studentName, contentX, doc.y, { align: 'center', width: contentWidth });
+            await browser.close();
 
-    // Underline relative to name (dynamic height)
-    const nameHeight = doc.heightOfString(studentName, { width: contentWidth });
-    const lineY = startNameY + nameHeight + 5;
-    doc.moveTo(contentX + 20, lineY).lineTo(contentX + contentWidth - 20, lineY).strokeColor('#d4c8be').stroke();
+            // 5. Enviar o PDF
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename=certificado_${req.user.id}.pdf`);
+            res.send(pdfBuffer);
 
-    doc.y = lineY + 20;
-
-    // Completion Text
-    doc.fontSize(14).fillColor('#4a4a4a').font('Helvetica');
-    doc.text('Por ter concluído com sucesso o curso de ', contentX, doc.y, { continued: true, align: 'center', width: contentWidth })
-        .font('Helvetica-Bold').text('SABERES DA FLORESTA: Formação Completa', { continued: true })
-        .font('Helvetica').text(', demonstrando dedicação e competência nas práticas de herborista.', { continued: false });
-
-    doc.moveDown(1.5);
-
-    // Date
-    const hoje = new Date().toLocaleDateString('pt-BR');
-    doc.text(`Concluído em: ${hoje}`, contentX, doc.y, { align: 'center', width: contentWidth });
-
-    // --- 5. SIGNATURES ---
-    // Dynamic positioning: Ensure it's at least at height-100, BUT if text pushed further, move down (+30 safe distance)
-    const sigY = Math.max(height - 100, doc.y + 40);
-    const sigWidth = 150;
-    const sigGap = 50;
-
-    const sig1X = centerX - sigWidth - (sigGap / 2);
-    const sig2X = centerX + (sigGap / 2);
-
-    // Sig 1
-    try {
-        const sig1 = path.join(assetsDir, 'M.Luiza.png');
-        if (fs.existsSync(sig1)) doc.image(sig1, sig1X, sigY - 50, { width: 120, align: 'center' });
-    } catch (e) { }
-    doc.moveTo(sig1X, sigY).lineTo(sig1X + sigWidth, sigY).strokeColor('#4a4a4a').stroke();
-    doc.fontSize(10).fillColor('#888').font('Helvetica').text('INSTRUTORA RESPONSÁVEL', sig1X, sigY + 5, { width: sigWidth, align: 'center' });
-
-    // Sig 2
-    try {
-        const sig2 = path.join(assetsDir, 'J.padilha.png');
-        if (fs.existsSync(sig2)) doc.image(sig2, sig2X + 20, sigY - 50, { width: 100, align: 'center' });
-    } catch (e) { }
-    doc.moveTo(sig2X, sigY).lineTo(sig2X + sigWidth, sigY).stroke();
-    doc.text('DIREÇÃO DA ESCOLA', sig2X, sigY + 5, { width: sigWidth, align: 'center' });
+        } catch (error) {
+            console.error("Erro ao gerar certificado via Puppeteer:", error);
+            res.status(500).json({ error: 'Erro ao gerar certificado.' });
+        }
+    });
 
     doc.end();
 });
