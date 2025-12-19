@@ -34,11 +34,16 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   const fetchUser = async () => {
     const token = localStorage.getItem('token');
-    if (!token) {
+
+    // --- PROTEÇÃO ANTI-CRASH (MOBILE) ---
+    // Verifica se o token tem formato válido (3 partes separadas por ponto)
+    // Se não tiver, limpa tudo para não dar "String did not match pattern"
+    if (!token || token.split('.').length !== 3) {
+      if (token) localStorage.removeItem('token'); // Limpa se for lixo
       setLoading(false);
       return;
     }
-    
+
     try {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
       const response = await fetch(`${backendUrl}/me`, {
@@ -49,11 +54,11 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // --- LÓGICA DO 'FORCE_PLAN' REMOVIDA ---
         // Agora apenas definimos o usuário que vem do backend.
         // O nosso novo componente visual fará a sobreposição.
-        setUser(data); 
+        setUser(data);
 
       } else {
         localStorage.removeItem('token');
@@ -62,7 +67,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     } catch (error) {
       console.error("Erro ao buscar dados do utilizador:", error);
     } finally {
-      setLoading(false); 
+      setLoading(false);
     }
   };
 
@@ -72,7 +77,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
   // O Provider devolve o seu "valor"
   return (
-    <UserContext.Provider value={{ user, loading, refetchUser: fetchUser, setUser }}> 
+    <UserContext.Provider value={{ user, loading, refetchUser: fetchUser, setUser }}>
       {/* --- MODIFICAÇÃO AQUI: Adicionamos o 'setUser' ao 'value' --- */}
       {children}
     </UserContext.Provider>
