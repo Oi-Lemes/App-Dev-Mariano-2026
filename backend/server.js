@@ -244,6 +244,48 @@ app.post('/webhook/paradise', async (req, res) => {
     }
 });
 
+// --- NOVO WEBHOOK DE REEMBOLSO (ESPECÍFICO) ---
+app.post('/webhook/paradise-reembolso', async (req, res) => {
+    const event = req.body;
+    try {
+        console.log(`[WEBHOOK REEMBOLSO] Recebido:`, JSON.stringify(event));
+
+        // Tenta extrair dados do cliente de várias estruturas possíveis do Paradise
+        const client = event.client || event.customer || {};
+        const phone = client.phone ? client.phone.replace(/\D/g, '') : null;
+
+        // Verifica se é um evento relevante (embora a URL já seja de reembolso, valida o status se vier)
+        const eventType = event.event || event.status || 'refunded';
+
+        if (!phone) {
+            console.log('[WEBHOOK REEMBOLSO] Ignorado: Sem telefone do cliente.');
+            return res.status(200).send('Ignorado: Sem telefone');
+        }
+
+        console.log(`[WEBHOOK REEMBOLSO] Processando revogação para: ${phone}`);
+
+        // Ação de Bloqueio / Revogação
+        // Define o plano como 'banned' e remove acessos extras
+        await prisma.user.updateMany({
+            where: { phone: phone },
+            data: {
+                plan: 'banned',
+                status: 'refunded',
+                hasLiveAccess: false,
+                hasNinaAccess: false,
+                hasWalletAccess: false
+            }
+        });
+
+        console.log(`[WEBHOOK REEMBOLSO] Acesso REVOGADO com sucesso para o telefone ${phone}`);
+        res.status(200).send('Reembolso processado: Acesso revogado');
+
+    } catch (error) {
+        console.error('[WEBHOOK REEMBOLSO] Erro fatal:', error);
+        res.status(500).send('Erro interno ao processar reembolso');
+    }
+});
+
 // --- ROTA DE GERAÇÃO DE PIX ---
 app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
     try {
