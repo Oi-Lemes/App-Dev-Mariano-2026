@@ -602,7 +602,7 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
 
         cursorY = lineY + 30;
 
-        // --- CORREÇÃO DO TEXTO SOBRESCRITO ---
+        // --- CORREÇÃO DO TEXTO SOBRESCRITO (MANTIDO) ---
         // Separando em 3 linhas manuais
         const fixTextW = 550;
         const fixTextX = CENTER_X - (fixTextW / 2);
@@ -641,7 +641,7 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
             align: 'center'
         });
 
-        // --- ASSINATURAS (Fixo na parte inferior) ---
+        // --- ASSINATURAS (Ajustado Y para ficar rente) ---
         const SIG_Y = HEIGHT - 100;
         const SIG_BOX_W = 180;
         const SIG_GAP = 60;
@@ -649,19 +649,19 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
         const SIG_1_X = CENTER_X - SIG_BOX_W - (SIG_GAP / 2);
         const SIG_2_X = CENTER_X + (SIG_GAP / 2);
 
-        // Assinatura 1
+        // Assinatura 1 - Lowered from -50 to -35
         try {
             const s1 = path.join(assetsDir, 'M.Luiza.png');
-            if (fs.existsSync(s1)) doc.image(s1, SIG_1_X + 40, SIG_Y - 50, { width: 100 });
+            if (fs.existsSync(s1)) doc.image(s1, SIG_1_X + 40, SIG_Y - 35, { width: 100 });
         } catch (e) { }
 
         doc.moveTo(SIG_1_X, SIG_Y).lineTo(SIG_1_X + SIG_BOX_W, SIG_Y).strokeColor('#4a4a4a').stroke();
         doc.fontSize(12).font('Helvetica').text('INSTRUTORA RESPONSÁVEL', SIG_1_X, SIG_Y + 10, { width: SIG_BOX_W, align: 'center' });
 
-        // Assinatura 2
+        // Assinatura 2 - Lowered from -50 to -35
         try {
             const s2 = path.join(assetsDir, 'J.padilha.png');
-            if (fs.existsSync(s2)) doc.image(s2, SIG_2_X + 30, SIG_Y - 50, { width: 120 });
+            if (fs.existsSync(s2)) doc.image(s2, SIG_2_X + 30, SIG_Y - 35, { width: 120 });
         } catch (e) { }
 
         doc.moveTo(SIG_2_X, SIG_Y).lineTo(SIG_2_X + SIG_BOX_W, SIG_Y).stroke();
