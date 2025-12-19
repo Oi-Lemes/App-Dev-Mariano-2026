@@ -70,10 +70,33 @@ const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
 app.use(express.json());
 
 // Configuração do CORS
-const productionUrl = 'https://www.saberesdafloresta.site';
-const localUrl = 'http://localhost:3000';
+const allowedOrigins = [
+    'https://www.saberesdafloresta.site',
+    'http://localhost:3000',
+    'http://localhost:3002'
+];
+
+if (process.env.FRONTEND_URL) {
+    allowedOrigins.push(process.env.FRONTEND_URL);
+}
+
 app.use(cors({
-    origin: [productionUrl, localUrl, 'http://localhost:3002'],
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+
+        // Se FRONTEND_URL for *, aceita tudo
+        if (process.env.FRONTEND_URL === '*') {
+            return callback(null, true);
+        }
+
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+            callback(null, true);
+        } else {
+            console.log('CORS Blocked:', origin);
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     optionsSuccessStatus: 200
 }));
 
