@@ -471,7 +471,7 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
     res.json(resultado);
 });
 
-// --- ROTA DE GERAÇÃO DE CERTIFICADO (PDFKIT - LAYOUT PREMIUM HARDCODED) ---
+// --- ROTA DE GERAÇÃO DE CERTIFICADO (PDFKIT - LAYOUT PREMIUM HARDCODED FIXED) ---
 app.post('/gerar-certificado', authenticateToken, async (req, res) => {
     const { safeStudentName } = req.body;
     const studentName = safeStudentName ? safeStudentName.replace(/_/g, ' ').toUpperCase() : req.user.name.toUpperCase();
@@ -493,7 +493,6 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
         const HEIGHT = 595.28;
 
         // --- 1. SIDEBAR (33% WIDTH ~ 280-285 pts) ---
-        // A proporção 100mm/297mm é ~33.6%. Vamos usar 0.33 para simplificar.
         const SIDEBAR_WIDTH = WIDTH * 0.33;
 
         // Background Sidebar
@@ -539,7 +538,6 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
         try {
             const medal = path.join(assetsDir, 'medalha.png');
             if (fs.existsSync(medal)) {
-                // top: 30px, right: 50px (simulado)
                 doc.image(medal, WIDTH - 120, 30, { width: 80 });
             }
         } catch (e) { }
@@ -604,24 +602,39 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
 
         cursorY = lineY + 30;
 
-        // Texto de Conclusão (limitado largura para quebrar linha bonito)
-        doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica');
-        const textWidth = 500;
-        const textX = CENTER_X - (textWidth / 2);
+        // --- CORREÇÃO DO TEXTO SOBRESCRITO ---
+        // Separando em 3 linhas manuais
+        const fixTextW = 550;
+        const fixTextX = CENTER_X - (fixTextW / 2);
 
-        doc.text('Por ter concluído com sucesso o curso de ', textX, cursorY, {
-            width: textWidth,
-            align: 'center',
-            continued: true
-        }).font('Helvetica-Bold').text('SABERES DA FLORESTA: Formação Completa', {
-            continued: true
-        }).font('Helvetica').text(', demonstrando dedicação e competência nas práticas de herborista.', {
-            continued: false
-        });
+        // 1. Texto introdutório
+        doc.fontSize(16).fillColor('#4a4a4a').font('Helvetica')
+            .text('Por ter concluído com sucesso o curso de', fixTextX, cursorY, {
+                width: fixTextW,
+                align: 'center'
+            });
 
-        cursorY += 60;
+        cursorY += 25; // Pulo fixo
 
-        // Data
+        // 2. Nome do Curso (Negrito)
+        doc.font('Helvetica-Bold').fontSize(18).fillColor('#2d3e2e')
+            .text('SABERES DA FLORESTA: Formação Completa', fixTextX, cursorY, {
+                width: fixTextW,
+                align: 'center'
+            });
+
+        cursorY += 30; // Pulo fixo
+
+        // 3. Texto final
+        doc.font('Helvetica').fontSize(16).fillColor('#4a4a4a')
+            .text('demonstrando dedicação e competência nas práticas de herborista.', fixTextX, cursorY, {
+                width: fixTextW,
+                align: 'center'
+            });
+
+        cursorY += 50;
+
+        // Date
         const hoje = new Date().toLocaleDateString('pt-BR');
         doc.text(`Concluído em: ${hoje}`, CONTENT_START_X, cursorY, {
             width: CONTENT_WIDTH,
