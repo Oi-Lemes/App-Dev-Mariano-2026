@@ -567,13 +567,16 @@ app.post('/gerar-certificado', authenticateToken, (req, res) => {
                 .replace('src="img/J.padilha.png"', `src="${replaceImageSrc('J.padilha.png')}"`);
 
             // 4. Lançar o Puppeteer e gerar PDF
+            console.log("Iniciando Puppeteer...");
             const browser = await puppeteer.launch({
                 headless: 'new',
                 args: [
                     '--no-sandbox',
                     '--disable-setuid-sandbox',
                     '--disable-dev-shm-usage', // Otimização para containers
-                    '--disable-gpu'
+                    '--disable-gpu',
+                    '--single-process', // SALVA MEMÓRIA: Crucial para Render Free
+                    '--no-zygote'
                 ],
                 ignoreDefaultArgs: ['--disable-extensions']
             });
