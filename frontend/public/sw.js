@@ -15,5 +15,14 @@ self.addEventListener('activate', (event) => {
 // O navegador exige um "fetch handler" para considerar a app instalável.
 // Este é o mais simples possível: apenas passa o pedido para a rede.
 self.addEventListener('fetch', (event) => {
+  const url = new URL(event.request.url);
+
+  // --- IGNORAR BACKEND/API ---
+  // Se for chamada para o Render ou API, não intercepta. Deixa o navegador lidar direto.
+  // Isso evita erros de CORS e "Load failed" no Service Worker.
+  if (url.hostname.includes('onrender.com') || url.pathname.startsWith('/api') || event.request.method !== 'GET') {
+    return;
+  }
+
   event.respondWith(fetch(event.request));
 });
