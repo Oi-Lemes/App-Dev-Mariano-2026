@@ -141,6 +141,65 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
     );
   };
 
+  // --- UPLOAD DE FOTO DE PERFIL ---
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const { setUser } = useUser(); // Garantir que pegamos o setUser do contexto
+
+  const handleAvatarClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Por favor, selecione uma imagem.');
+      return;
+    }
+
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('profileImage', file);
+
+    try {
+      const token = localStorage.getItem('token');
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+
+      const response = await fetch(`${backendUrl}/upload-profile-image`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
+        body: formData
+      });
+
+      if (!response.ok) throw new Error('Falha no upload');
+
+      const data = await response.json();
+
+      // Atualiza o contexto do usuário com a nova imagem
+      if (data.success && user) {
+        setUser({ ...user, profileImage: data.profileImage });
+      }
+
+    } catch (error) {
+      console.error('Erro ao fazer upload:', error);
+      alert('Erro ao atualizar foto de perfil.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Helper para montar URL da imagem (se for relativa do backend)
+  const getProfileImageUrl = (path?: string | null) => {
+    if (!path) return null;
+    if (path.startsWith('http')) return path;
+    const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+    return `${backendUrl}${path}`;
+  };
+
   return (
     <div className="flex min-h-screen bg-transparent">
       {/* Overlay Mobile */}
@@ -161,10 +220,41 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
               <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500"></div>
 
               <div className={`flex flex-col items-center transition-all duration-700 ease-out ${isMounted ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
-                <div className="w-20 h-20 rounded-full border-2 border-amber-500/50 p-1 mb-4 shadow-[0_0_15px_rgba(245,158,11,0.2)]">
-                  <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-2xl">
-                    👤
+
+                {/* ÁREA DA FOTO (CLICKABLE) */}
+                <div
+                  className="relative group cursor-pointer"
+                  onClick={handleAvatarClick}
+                >
+                  <div className="w-20 h-20 rounded-full border-2 border-amber-500/50 p-1 mb-4 shadow-[0_0_15px_rgba(245,158,11,0.2)] overflow-hidden">
+                    <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-2xl relative overflow-hidden">
+                      {isUploading ? (
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      ) : user?.profileImage ? (
+                        <img
+                          src={getProfileImageUrl(user.profileImage) || ''}
+                          alt="Perfil"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span>👤</span>
+                      )}
+
+                      {/* Overlay de Edição on Hover */}
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <span className="text-xs text-white pb-1">📷</span>
+                      </div>
+                    </div>
                   </div>
+
+                  {/* Input Hidden */}
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                  />
                 </div>
                 <h2 className="text-xl font-serif text-amber-50 tracking-wide font-thin italic mb-2">
                   {userLoading

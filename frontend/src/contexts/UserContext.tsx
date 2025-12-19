@@ -14,6 +14,7 @@ export interface User {
   hasLiveAccess: boolean;
   hasNinaAccess: boolean;
   hasWalletAccess: boolean;
+  profileImage?: string | null; // URL da foto de perfil
 }
 
 // Define a estrutura do nosso Contexto, que disponibilizará os dados

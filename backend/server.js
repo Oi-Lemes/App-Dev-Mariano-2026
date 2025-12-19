@@ -11,11 +11,44 @@ import axios from 'axios';
 import fs from 'fs';
 import { PrismaClient } from '@prisma/client';
 import PDFDocument from 'pdfkit'; // NEW: PDF Library for Certificates
+import multer from 'multer'; // Upload de Imagens
 
 const prisma = new PrismaClient();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const execFileAsync = promisify(execFile);
+
+// --- CONFIGURAÇÃO DE UPLOAD (MULTER) ---
+// Cria a pasta 'uploads' se não existir
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+// Configura onde salvar e o nome do arquivo
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, uploadDir);
+    },
+    filename: function (req, file, cb) {
+        // Nome único: userId-timestamp.ext
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, 'profile-' + uniqueSuffix + ext);
+    }
+});
+
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limite 5MB
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Apenas imagens são permitidas!'));
+        }
+    }
+});
 
 // --- DADOS ESTÁTICOS DOS MÓDULOS ---
 const MOCK_MODULOS = [
@@ -102,6 +135,8 @@ const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-secreto';
 const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
 
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Servir imagens estáticas
+
 
 // Configuração do CORS
 const allowedOrigins = [
@@ -339,6 +374,33 @@ app.get('/me', authenticateToken, async (req, res) => {
     const user = await prisma.user.findUnique({ where: { id: req.user.id } });
     if (!user) return res.sendStatus(404);
     res.json(user);
+});
+
+// --- ROTA DE UPLOAD DE FOTO DE PERFIL ---
+app.post('/upload-profile-image', authenticateToken, upload.single('profileImage'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ error: 'Nenhum arquivo enviado.' });
+        }
+
+        // Gera a URL completa (ajuste o protocolo/host se necessário, mas path relativo costuma funcionar bem no frontend se servido do mesmo domínio)
+        // Como o backend pode estar em outra porta/domínio (Render), é melhor retornar o path relativo e o frontend monta, ou URL completa se tivermos env var.
+        // Vamos retornar o path relativo: /uploads/nome-do-arquivo.
+        const imageUrl = `/uploads/${req.file.filename}`;
+
+        // Atualiza no Banco
+        const updatedUser = await prisma.user.update({
+            where: { id: req.user.id },
+            data: { profileImage: imageUrl }
+        });
+
+        console.log(`[UPLOAD] Nova foto para User ${req.user.id}: ${imageUrl}`);
+        res.json({ success: true, profileImage: imageUrl, user: updatedUser });
+
+    } catch (error) {
+        console.error("Erro no upload:", error);
+        res.status(500).json({ error: 'Erro ao salvar a imagem.' });
+    }
 });
 
 app.get('/modulos', authenticateToken, (req, res) => { res.json(MOCK_MODULOS); });

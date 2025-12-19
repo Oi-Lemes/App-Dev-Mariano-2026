@@ -24,6 +24,8 @@ model User {
   hasLiveAccess Boolean  @default(false)
   hasNinaAccess Boolean  @default(false)
   hasWalletAccess Boolean @default(false)
+  profileImage    String? // URL da foto de perfil
+
 
   // --- RELACIONAMENTOS ---
   magicLinks MagicLink[]
