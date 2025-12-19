@@ -144,7 +144,13 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
   // --- UPLOAD DE FOTO DE PERFIL ---
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
-  const { setUser } = useUser(); // Garantir que pegamos o setUser do contexto
+  const [imageError, setImageError] = useState(false); // Novo estado para controlar erro de imagem
+  const { setUser } = useUser();
+
+  // Resetar erro quando a imagem mudar
+  useEffect(() => {
+    setImageError(false);
+  }, [user?.profileImage]);
 
   const handleAvatarClick = () => {
     fileInputRef.current?.click();
@@ -182,6 +188,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
       // Atualiza o contexto do usuário com a nova imagem
       if (data.success && user) {
         setUser({ ...user, profileImage: data.profileImage });
+        setImageError(false); // Resetar erro ao subir nova
       }
 
     } catch (error) {
@@ -192,7 +199,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-  // Helper para montar URL da imagem (se for relativa do backend)
+  // Helper para montar URL da imagem
   const getProfileImageUrl = (path?: string | null) => {
     if (!path) return null;
     if (path.startsWith('http')) return path;
@@ -227,20 +234,15 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
                 >
                   <div className="w-20 h-20 rounded-full border-2 border-emerald-500/80 p-1 mb-4 shadow-[0_0_20px_rgba(16,185,129,0.5)] overflow-hidden bg-slate-900 transition-all active:scale-95 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.8)]">
                     <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-2xl relative overflow-hidden group-hover:bg-slate-700 transition-colors">
-                      {user?.profileImage ? (
-                        // Use img tag for simpler control, or Next.js Image if preferred. Using img specific for external uploads check
-                        // eslint-disable-next-line @next/next/no-img-element
+                      {user?.profileImage && !imageError ? (
                         <img
                           src={getProfileImageUrl(user.profileImage) || ''}
                           alt="Perfil"
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback se a imagem falhar
-                            (e.target as HTMLImageElement).src = 'https://ui-avatars.com/api/?name=Membro+VIP&background=random';
-                          }}
+                          onError={() => setImageError(true)}
                         />
                       ) : (
-                        // Ícone de Câmera "Na Cara" 
+                        // Ícone de Câmera "Na Cara"
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-emerald-400">
                           <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" />
                           <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" />
