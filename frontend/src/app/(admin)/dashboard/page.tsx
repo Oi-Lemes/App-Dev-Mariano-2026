@@ -180,6 +180,9 @@ export default function DashboardPage() {
       setLoading(true);
       setErrorMessage(null);
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+
+      console.log('🔍 DEBUG: Backend URL being used:', backendUrl); // LOG PARA DEBUG
+
       const [modulosRes, progressoModulosRes, progressoIdsRes] = await Promise.all([
         fetch(`${backendUrl}/modulos`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
         fetch(`${backendUrl}/progresso-modulos`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
