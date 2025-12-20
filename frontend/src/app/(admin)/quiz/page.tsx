@@ -181,32 +181,18 @@ export default function QuizPage() {
         }
     }, [currentIndex, score, started, gameFinished]);
 
-    // Função para imprimir direto do Quiz (usa a mesma lógica da página de certificado)
-    const [isGenerating, setIsGenerating] = useState(false);
-    const handlePrintCertificate = async () => {
-        setIsGenerating(true);
+    const playSound = (type: 'correct' | 'wrong' | 'win') => {
         try {
-            const token = localStorage.getItem('token');
-            const response = await fetch(`/api/certificate`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                body: JSON.stringify({ safeStudentName: null }), // Backend usa o nome do user se for null
-            });
-            if (!response.ok) throw new Error('Erro ao gerar');
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `meu_certificado.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-        } catch (e) {
-            alert('Erro ao gerar certificado. Tente novamente.');
-        } finally {
-            setIsGenerating(false);
-        }
+            const audio = new Audio(SOUNDS[type]);
+            audio.volume = type === 'win' ? 0.6 : 1.0;
+            const playPromise = audio.play();
+
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.error("Audio playback failed:", error);
+                });
+            }
+        } catch (e) { console.error("Audio error", e); }
     };
 
     const finishGame = async (finalScoreValue: number) => {
@@ -235,51 +221,15 @@ export default function QuizPage() {
         }
     };
 
-    const percentage = Math.round((score / QUESTIONS.length) * 100);
-    const passed = percentage >= 60;
-    const progress = ((currentIndex + 1) / QUESTIONS.length) * 100;
-
-    // --- COMPONENTE CIRCULAR IGUAL AO DASHBOARD ---
-    const ProgressCircle = ({ percentage }: { percentage: number }) => {
-        const radius = 22; // Levemente ajustado para caber no header
-        const stroke = 4;
-        const normalizedRadius = radius - stroke * 2;
-        const circumference = normalizedRadius * 2 * Math.PI;
-        const strokeDashoffset = circumference - (percentage / 100) * circumference;
-
-        return (
-            <div className="relative flex items-center justify-center" style={{ width: radius * 2, height: radius * 2 }}>
-                <svg height={radius * 2} width={radius * 2} className="-rotate-90">
-                    <circle
-                        stroke="#ffffff20"
-                        fill="transparent"
-                        strokeWidth={stroke}
-                        r={normalizedRadius}
-                        cx={radius}
-                        cy={radius}
-                    />
-                    <circle
-                        stroke={(() => {
-                            const hue = Math.min((percentage / 100) * 120, 120); // 0 (Red) -> 120 (Green)
-                            return `hsl(${hue}, 80%, 45%)`;
-                        })()}
-                        fill="transparent"
-                        strokeWidth={stroke}
-                        strokeDasharray={circumference + ' ' + circumference}
-                        style={{ strokeDashoffset }}
-                        r={normalizedRadius}
-                        cx={radius}
-                        cy={radius}
-                        className="transition-all duration-300"
-                        strokeLinecap="round"
-                    />
-                </svg>
-                <div className="absolute inset-0 flex items-center justify-center text-white font-bold text-[10px]">
-                    {Math.round(percentage)}%
-                </div>
-            </div>
-        );
-    }
+    const nextQuestion = () => {
+        setShowResult(false);
+        setSelectedOption(null);
+        if (currentIndex + 1 < QUESTIONS.length) {
+            setCurrentIndex(curr => curr + 1);
+        } else {
+            finishGame(score + (isCorrect ? 1 : 0)); // Pass final score for accuracy
+        }
+    };
 
     // VIEW
     if (!started) {
