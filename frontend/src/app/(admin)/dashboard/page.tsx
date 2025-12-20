@@ -385,7 +385,7 @@ export default function DashboardPage() {
     { id: 98, nome: 'Live com o Dr. José Nakamura', description: 'Um encontro exclusivo para tirar dúvidas.', aulas: [] },
     { id: 100, nome: 'Emissão de Certificado', description: 'Parabéns! Emita o seu certificado.', aulas: [] },
     { id: 101, nome: 'Emissão CARTEIRA NACIONAL CRTH ABRATH', description: 'Esta carteira tem sua emissão de forma anual.', aulas: [] },
-    { id: 102, nome: 'Quiz de Conhecimento', description: 'Teste seus conhecimentos e ganhe recompensas!', aulas: [{ id: 999 }] }
+    { id: 102, nome: 'Quiz de Conhecimento', description: 'Teste seus conhecimentos e ganhe recompensas!', capa: '/img/modulo_quiz.png', aulas: [{ id: 999 }] }
   ];
   // Adiciona módulos fixos se não existirem
   modulosFixos.forEach(mf => { if (!modulosParaExibir.some(m => m.id === mf.id)) modulosParaExibir.push(mf); });
