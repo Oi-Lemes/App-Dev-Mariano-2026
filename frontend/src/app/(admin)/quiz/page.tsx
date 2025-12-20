@@ -268,16 +268,25 @@ export default function QuizPage() {
                         Desafio Final
                     </h1>
                     <p className="text-gray-200 text-xl font-light mb-8 max-w-lg mx-auto leading-relaxed">
-                        São <strong>30 perguntas</strong>. Você precisa acertar pelo menos <strong>60%</strong> para obter sua aprovação e liberar o Certificado Oficial.
+                        São <strong>15 perguntas</strong>. Você precisa acertar pelo menos <strong>60%</strong> para obter sua aprovação e liberar o Certificado Oficial.
                     </p>
-                    <motion.button
-                        whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(16,185,129,0.6)" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setStarted(true)}
-                        className="px-12 py-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-2xl rounded-full transition-all"
-                    >
-                        INICIAR AVALIAÇÃO 📝
-                    </motion.button>
+                    <div className="flex flex-col gap-4 items-center">
+                        <motion.button
+                            whileHover={{ scale: 1.05, boxShadow: "0px 0px 20px rgba(16,185,129,0.6)" }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => setStarted(true)}
+                            className="px-12 py-5 bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-2xl rounded-full transition-all"
+                        >
+                            INICIAR AVALIAÇÃO 📝
+                        </motion.button>
+
+                        <button
+                            onClick={() => playSound('correct')}
+                            className="text-sm text-gray-400 hover:text-white underline"
+                        >
+                            Testar Som 🔊
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -290,36 +299,67 @@ export default function QuizPage() {
                 <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-full max-w-2xl bg-[#1e293b]/90 backdrop-blur-xl rounded-[2.5rem] p-10 text-center shadow-2xl border border-[#334155]"
+                    className="w-full max-w-3xl bg-[#1e293b]/90 backdrop-blur-xl rounded-[2.5rem] p-10 text-center shadow-2xl border border-[#334155]"
                 >
-                    <div className="mb-8 flex justify-center">
-                        <div className="relative w-48 h-48">
-                            <svg className="w-full h-full -rotate-90">
-                                <circle cx="96" cy="96" r="88" stroke="#334155" strokeWidth="12" fill="none" />
-                                <motion.circle
-                                    cx="96" cy="96" r="88"
-                                    stroke={passed ? "#10b981" : "#ef4444"}
-                                    strokeWidth="12"
-                                    fill="none"
-                                    strokeDasharray="553"
-                                    strokeDashoffset={553 - (553 * percentage) / 100}
-                                    initial={{ strokeDashoffset: 553 }}
-                                    animate={{ strokeDashoffset: 553 - (553 * percentage) / 100 }}
-                                    transition={{ duration: 2, ease: "easeOut" }}
-                                    strokeLinecap="round"
-                                />
-                            </svg>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                <span className={`text-6xl font-bold ${passed ? 'text-emerald-400' : 'text-red-400'}`}>{percentage}%</span>
+                    <h2 className="text-4xl font-bold text-white mb-8">{passed ? "APROVADO!" : "Reprovado"}</h2>
+
+                    {/* DOUBLE CIRCLES: ACERTOS vs ERROS */}
+                    <div className="flex flex-col md:flex-row justify-center gap-12 mb-10">
+                        {/* Circle 1: Acertos (Green) */}
+                        <div className="flex flex-col items-center">
+                            <div className="relative w-40 h-40 mb-4">
+                                <svg className="w-full h-full -rotate-90">
+                                    <circle cx="80" cy="80" r="70" stroke="#334155" strokeWidth="12" fill="none" />
+                                    <motion.circle
+                                        cx="80" cy="80" r="70"
+                                        stroke="#10b981"
+                                        strokeWidth="12"
+                                        fill="none"
+                                        strokeDasharray="440"
+                                        strokeDashoffset={440 - (440 * percentage) / 100}
+                                        initial={{ strokeDashoffset: 440 }}
+                                        animate={{ strokeDashoffset: 440 - (440 * percentage) / 100 }}
+                                        transition={{ duration: 1.5, ease: "easeOut" }}
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-4xl font-bold text-emerald-400">{score}</span>
+                                    <span className="text-xs text-gray-400 uppercase">Acertos</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Circle 2: Erros (Red) */}
+                        <div className="flex flex-col items-center">
+                            <div className="relative w-40 h-40 mb-4">
+                                <svg className="w-full h-full -rotate-90">
+                                    <circle cx="80" cy="80" r="70" stroke="#334155" strokeWidth="12" fill="none" />
+                                    <motion.circle
+                                        cx="80" cy="80" r="70"
+                                        stroke="#ef4444"
+                                        strokeWidth="12"
+                                        fill="none"
+                                        strokeDasharray="440"
+                                        strokeDashoffset={440 - (440 * (100 - percentage)) / 100}
+                                        initial={{ strokeDashoffset: 440 }}
+                                        animate={{ strokeDashoffset: 440 - (440 * (100 - percentage)) / 100 }}
+                                        transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
+                                        strokeLinecap="round"
+                                    />
+                                </svg>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <span className="text-4xl font-bold text-red-500">{QUESTIONS.length - score}</span>
+                                    <span className="text-xs text-gray-400 uppercase">Erros</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <h2 className="text-4xl font-bold text-white mb-4">{passed ? "APROVADO!" : "Reprovado"}</h2>
                     <p className="text-lg text-gray-300 mb-10">
                         {passed
                             ? "Parabéns! Você demonstrou excelência nos saberes naturais. Seu certificado foi desbloqueado."
-                            : "Você precisa de no mínimo 60% de acerto. Revise o material e tente novamente."}
+                            : `Você acertou ${percentage}%. Precisa de no mínimo 60%. Revise o material e tente novamente.`}
                     </p>
 
                     <div className="flex gap-4 justify-center">
@@ -328,18 +368,18 @@ export default function QuizPage() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => { localStorage.removeItem('quiz_state'); window.location.reload(); }}
-                                className="px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold"
+                                className="px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold transition-all"
                             >
-                                Tentar Novamente
+                                Tentar Novamente 🔄
                             </motion.button>
                         )}
                         <Link href="/dashboard">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg"
+                                className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg transition-all"
                             >
-                                Voltar à Área de Membros
+                                Voltar à Área de Membros 🏠
                             </motion.button>
                         </Link>
                     </div>
