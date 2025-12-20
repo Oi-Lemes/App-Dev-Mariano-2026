@@ -225,10 +225,25 @@ export default function DashboardPage() {
         try {
           const { currentIndex, gameFinished, score } = JSON.parse(savedState);
 
-          // SE TERMINOU O JOGO OU JÁ TEM NOTA DE APROVAÇÃO (60% = 9/15), É 100%
-          // Isso garante que quem passou veja 100% mesmo se algo falhar no "gameFinished"
-          if (gameFinished || (typeof score === 'number' && score >= 9)) {
+          // LÓGICA CORRIGIDA: Só é 100% se terminou E passou (score >= 9) OU se já tem score de aprovação solto.
+          // Antes estava: se terminou (mesmo zerado), dava 100%. ISSO ESTAVA ERRADO.
+          const passed = (typeof score === 'number' && score >= 9); // 60% de 15 é 9
+
+          if (passed) {
+            // Se passou, 100% (Desbloqueia certificado)
             setProgressoModulos(prev => ({ ...prev, 102: 100 }));
+            return;
+          } else if (gameFinished && !passed) {
+            // Se terminou e NÃO passou, calcula a nota proporcional (ex: 4/15 = 26%)
+            // Isso impede que fique 100% e mantém o certificado bloqueado.
+            const finalPercent = Math.round(((score || 0) / 15) * 100);
+            setProgressoModulos(prev => {
+              // Só atualiza se o backend não estiver já em 100 (caso o user tenha passado ANTIGAMENTE)
+              if ((prev[102] || 0) < 100) {
+                return { ...prev, 102: finalPercent };
+              }
+              return prev;
+            });
             return;
           }
 
