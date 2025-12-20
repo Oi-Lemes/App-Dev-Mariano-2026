@@ -168,7 +168,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full opacity-60 group-hover:opacity-100 blur transition duration-500"></div>
                 <div className="relative w-20 h-20 rounded-full border-4 border-[#1e293b] overflow-hidden">
                   <img
-                    src={user?.avatar_url || `https://ui-avatars.com/api/?name=${user?.nome || 'User'}&background=10b981&color=fff`}
+                    src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=10b981&color=fff`}
                     alt="Avatar"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                   />
@@ -176,7 +176,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
               </div>
 
               <div className="text-center">
-                <h2 className="text-lg font-bold text-white tracking-tight">{user?.nome || 'Visitante'}</h2>
+                <h2 className="text-lg font-bold text-white tracking-tight">{user?.name || 'Visitante'}</h2>
                 <p className="text-xs text-emerald-400 font-bold uppercase tracking-widest">{user?.plan || 'Plano Básico'}</p>
               </div>
 
