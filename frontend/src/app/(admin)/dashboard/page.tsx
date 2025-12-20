@@ -303,7 +303,7 @@ export default function DashboardPage() {
   // ORDENAÇÃO ROBUSTA: Garantir que os módulos principais estejam em ordem (1, 2, 3...)
   const modulosPrincipais = Array.isArray(modulos)
     ? modulos
-      .filter(m => m && m.nome && !m.nome.toLowerCase().includes('certificado'))
+      .filter(m => m && m.id >= 1 && m.id <= 6) // Apenas módulos de conteúdo (1-6) contam para conclusão
       .sort((a, b) => (a.ordem || a.id) - (b.ordem || b.id)) // Ordena por Ordem ou ID
     : [];
 
