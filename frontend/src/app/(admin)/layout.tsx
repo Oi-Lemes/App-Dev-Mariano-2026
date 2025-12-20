@@ -82,14 +82,15 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
       // Se concluiu todas as aulas + Quiz, força 100%. 
       // Se não, calcula proporcional. O Quiz vale como um "módulo final".
 
-      if (hasQuiz && totalConcluidas >= totalAulas) {
+      // CHECK LOCAL STORAGE OVERRIDE (For client-side progress fix)
+      const localQuizSuccess = localStorage.getItem('quiz_completed_legacy') === 'true';
+
+      if (hasQuiz || localQuizSuccess) {
         setProgressoTotal(100);
       } else {
         // Mantém a lógica normal mas limita a 99% se não fez o quiz
         let calc = totalAulas > 0 ? (totalConcluidas / totalAulas) * 100 : 0;
-        if (calc > 95 && !hasQuiz) calc = 95; // Trava em 95 se faltar o quiz
-        if (hasQuiz) calc = 100; // Se fez o quiz, consideramos 100% (simplificação solicitada)
-
+        if (calc > 95) calc = 95; // Trava em 95 se faltar o quiz
         setProgressoTotal(calc);
       }
 
@@ -164,13 +165,50 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
           >
             {/* Cabeçalho da Sidebar */}
             <div className="px-6 pb-6 border-b border-white/5 flex flex-col items-center space-y-4">
-              <div className="relative group cursor-pointer" onClick={() => router.push('/dashboard')}>
+              <div className="relative group cursor-pointer">
+                {/* Visual Effects */}
                 <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full opacity-60 group-hover:opacity-100 blur transition duration-500"></div>
                 <div className="relative w-20 h-20 rounded-full border-4 border-[#1e293b] overflow-hidden">
                   <img
                     src={user?.profileImage || `https://ui-avatars.com/api/?name=${user?.name || 'User'}&background=10b981&color=fff`}
                     alt="Avatar"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  />
+                  {/* Overlay de Upload */}
+                  <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 cursor-pointer">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </label>
+                  <input
+                    id="avatar-upload"
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      const formData = new FormData();
+                      formData.append('profileImage', file);
+
+                      try {
+                        const token = localStorage.getItem('token');
+                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL}/upload-profile-image`, {
+                          method: 'POST',
+                          headers: { 'Authorization': `Bearer ${token}` },
+                          body: formData
+                        });
+                        if (res.ok) {
+                          const data = await res.json();
+                          // Force reload to update context/image
+                          window.location.reload();
+                        } else {
+                          alert("Erro ao enviar imagem.");
+                        }
+                      } catch (err) { console.error(err); alert("Erro ao enviar imagem."); }
+                    }}
                   />
                 </div>
               </div>

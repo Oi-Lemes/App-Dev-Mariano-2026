@@ -397,8 +397,9 @@ export default function QuizPage() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => {
-                                if (confirm("Tem certeza que deseja refazer a prova? Seu progresso atual de 100% será resetado.")) {
+                                if (confirm("Tem certeza que deseja refazer a prova?")) {
                                     localStorage.removeItem('quiz_state');
+                                    // Keep completion flag if they passed before? Maybe yes to avoid locking them out.
                                     window.location.reload();
                                 }
                             }}
@@ -410,7 +411,10 @@ export default function QuizPage() {
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
-                            onClick={() => router.push('/dashboard')}
+                            onClick={() => {
+                                // Force navigation
+                                window.location.href = '/dashboard';
+                            }}
                             className="w-full md:w-auto px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold shadow-lg transition-all"
                         >
                             Voltar ao Dashboard 🏠
