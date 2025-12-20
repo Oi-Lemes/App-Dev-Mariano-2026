@@ -338,14 +338,32 @@ export default function DashboardPage() {
   }
 
   // ORDENAÇÃO ROBUSTA: Garantir que os módulos principais estejam em ordem (1, 2, 3...)
+  // HARDCODED ORDER to ensure frontend reflects changes immediately regardless of backend deployment
+  const FORCED_ORDER: { [key: number]: number } = {
+    1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6,
+    102: 7, // Quiz
+    100: 8, // Certificado
+    101: 9, // Carteira
+    98: 10, // Live
+    103: 11, // WhatsApp (if ID 103)
+    99: 11   // WhatsApp (if ID 99)
+  };
+
   const modulosPrincipais = Array.isArray(modulos)
     ? modulos
-      .filter(m => m && m.id >= 1 && m.id <= 6) // Apenas módulos de conteúdo (1-6) contam para conclusão
-      .sort((a, b) => (a.ordem || a.id) - (b.ordem || b.id)) // Ordena por Ordem ou ID
+      .filter(m => m) // Removido filtro de ID 1-6 para permitir reordenar tudo aqui se necessário, mas mantendo a lógica original
+      .filter(m => m.id <= 6 || FORCED_ORDER[m.id]) // Garante que só processamos os conhecidos
+      .sort((a, b) => {
+        const orderA = FORCED_ORDER[a.id] || 999;
+        const orderB = FORCED_ORDER[b.id] || 999;
+        return orderA - orderB;
+      })
     : [];
 
-  const totalAulasPrincipais = modulosPrincipais.reduce((acc, m) => acc + (m.aulas?.length || 0), 0);
-  const aulasPrincipais = modulosPrincipais.flatMap((m: any) => m.aulas || []);
+  // Recalcular totais apenas para os vídeos (ID <= 6)
+  const modulosVideos = modulosPrincipais.filter(m => m.id <= 6);
+  const totalAulasPrincipais = modulosVideos.reduce((acc, m) => acc + (m.aulas?.length || 0), 0);
+  const aulasPrincipais = modulosVideos.flatMap((m: any) => m.aulas || []);
   const totalConcluidasPrincipais = aulasPrincipais.filter((a: any) => aulasConcluidasIds.includes(a.id)).length;
   const cursoConcluido = totalAulasPrincipais > 0 && totalConcluidasPrincipais >= totalAulasPrincipais;
 
