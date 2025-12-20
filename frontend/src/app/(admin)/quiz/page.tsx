@@ -15,7 +15,7 @@ const QUESTIONS = [
         correctAnswer: 1,
         options: ["Energético Natural", "Calmante e Digestivo", "Cicatrizante Potente", "Repelente de Insetos"],
         explanation: "A camomila é consagrada por suas propriedades calmantes e auxiliares na digestão.",
-        image: "/img/md1.jpg"
+        image: "/img/quiz/q1.png"
     },
     {
         id: 2,
@@ -23,7 +23,7 @@ const QUESTIONS = [
         correctAnswer: 2,
         options: ["Coração", "Hígado", "Rins", "Pulmão"],
         explanation: "O chá de quebra-pedra é tradicionalmente utilizado para auxiliar na eliminação de cálculos renais.",
-        image: "/img/md2.jpg"
+        image: "/img/quiz/q2.png"
     },
     {
         id: 3,
@@ -31,7 +31,7 @@ const QUESTIONS = [
         correctAnswer: 0,
         options: ["Babosa (Aloe Vera)", "Hortelã", "Alecrim", "Pimenta"],
         explanation: "O gel da babosa tem ação refrescante e cicatrizante, ideal para queimaduras.",
-        image: "/img/md3.jpg"
+        image: "/img/quiz/q3.png"
     },
     {
         id: 4,
@@ -39,7 +39,7 @@ const QUESTIONS = [
         correctAnswer: 1,
         options: ["Diurético", "Expectorante / Broncodilatador", "Laxante", "Estimulante"],
         explanation: "O xarope de guaco é amplamente usado para tosse e bronquite.",
-        image: "/img/md4.jpg"
+        image: "/img/quiz/q4.png"
     },
     {
         id: 5,
@@ -47,7 +47,7 @@ const QUESTIONS = [
         correctAnswer: 3,
         options: ["Ferver a planta", "Congelar a planta", "Queimar a planta", "Extrair ativos a frio em líquido"],
         explanation: "Maceração consiste em deixar a planta de molho (água, álcool ou óleo) para extrair seus princípios.",
-        image: "/img/md5.jpg"
+        image: "/img/quiz/q5.png"
     },
     {
         id: 6,
@@ -55,7 +55,7 @@ const QUESTIONS = [
         correctAnswer: 0,
         options: ["Lavanda", "Limão", "Eucalipto", "Cravo"],
         explanation: "A Lavanda é versátil, segura e excelente cicatrizante e calmante.",
-        image: "/img/md6.jpg"
+        image: "/img/quiz/q6.png"
     },
     {
         id: 7,
@@ -63,7 +63,7 @@ const QUESTIONS = [
         correctAnswer: 2,
         options: ["Dor de dente", "Fortalecer ossos", "Ansiedade e Insônia", "Ganho de massa muscular"],
         explanation: "A Melissa tem forte ação no sistema nervoso, reduzindo ansiedade.",
-        image: "/img/md1.jpg"
+        image: "/img/quiz/q7.png"
     },
     {
         id: 8,
@@ -71,7 +71,7 @@ const QUESTIONS = [
         correctAnswer: 1,
         options: ["Ferver a planta junto com a água", "Jogar água fervente sobre a planta e tampar", "Comer a folha crua", "Bater no liquidificador"],
         explanation: "Infusão é usada para partes delicadas (folhas, flores), preservando óleos voláteis.",
-        image: "/img/md2.jpg"
+        image: "/img/quiz/q8.png"
     },
     {
         id: 9,
@@ -79,7 +79,7 @@ const QUESTIONS = [
         correctAnswer: 0,
         options: ["Digestão e ressaca", "Visão", "Audição", "Crescimento de cabelo"],
         explanation: "O boldo estimula a produção de bile, ajudando na digestão de gorduras.",
-        image: "/img/md3.jpg"
+        image: "/img/quiz/q9.png"
     },
     {
         id: 10,
@@ -87,7 +87,7 @@ const QUESTIONS = [
         correctAnswer: 3,
         options: ["Folha", "Flor", "Semente", "Rizoma (Raiz)"],
         explanation: "Por ser uma parte dura, o rizoma do gengibre precisa ser fervido (decocção).",
-        image: "/img/md4.jpg"
+        image: "/img/quiz/q10.png"
     },
     {
         id: 11,
@@ -95,7 +95,7 @@ const QUESTIONS = [
         correctAnswer: 2,
         options: ["Azia", "Tosse", "Contusões e Dores Musculares", "Dor de garganta"],
         explanation: "Pomadas e tinturas de arnica são excelentes anti-inflamatórios locais.",
-        image: "/img/md5.jpg"
+        image: "/img/quiz/q11.png"
     },
     {
         id: 12,
@@ -103,7 +103,7 @@ const QUESTIONS = [
         correctAnswer: 1,
         options: ["Inalação", "Ingestão pura sem orientação", "Massagem (diluído)", "Difusor"],
         explanation: "Óleos essenciais são super concentrados e a ingestão indevida pode ser tóxica.",
-        image: "/img/md6.jpg"
+        image: "/img/quiz/q12.png"
     },
     {
         id: 13,
@@ -111,7 +111,7 @@ const QUESTIONS = [
         correctAnswer: 0,
         options: ["Antibiótico Natural", "Calmante", "Alucinógeno", "Hidratante de pele"],
         explanation: "O alho possui alicina, com forte ação antimicrobiana.",
-        image: "/img/md1.jpg"
+        image: "/img/quiz/q13.png"
     },
     {
         id: 14,
@@ -119,7 +119,7 @@ const QUESTIONS = [
         correctAnswer: 2,
         options: ["Pé de atleta", "Cárie", "Gastrite e Úlcera", "Dores articulares"],
         explanation: "Ela protege a mucosa gástrica e reduz a acidez estomacal.",
-        image: "/img/md2.jpg"
+        image: "/img/quiz/q14.png"
     },
     {
         id: 15,
@@ -127,7 +127,7 @@ const QUESTIONS = [
         correctAnswer: 3,
         options: ["Um chá gelado", "Um xarope doce", "Uma pílula", "Aplicação de ervas amassadas sobre a pele"],
         explanation: "Emplastros usam a planta diretamente sobre a região afetada.",
-        image: "/img/md3.jpg"
+        image: "/img/quiz/q15.png"
     }
 ];
 
@@ -457,28 +457,21 @@ export default function QuizPage() {
                         transition={{ duration: 0.3 }}
                         className="w-full max-w-5xl bg-transparent flex flex-col md:flex-row min-h-[50vh] md:min-h-[400px]"
                     >
-                        {/* Esquerda: Imagem */}
-                        <div className="hidden md:block md:w-1/3 relative overflow-hidden rounded-3xl mr-6">
+                        {/* Esquerda: Imagem (Topo no mobile, Esquerda no desktop) */}
+                        <div className="w-full h-64 md:h-auto md:w-1/3 relative overflow-hidden rounded-3xl md:mr-6 mb-6 md:mb-0 shadow-2xl border border-white/10 shrink-0">
                             <Image
                                 src={q.image}
                                 alt="Topic"
                                 layout="fill"
                                 objectFit="cover"
-                                className="hover:scale-105 transition-transform duration-700"
+                                className="hover:scale-110 transition-transform duration-1000 ease-in-out"
                                 onError={(e) => e.currentTarget.src = '/img/fundo.png'}
                             />
                             <div className="absolute top-4 left-4 z-10">
-                                <span className="bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest border border-white/10">
+                                <span className="bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest border border-white/10 shadow-lg">
                                     {currentIndex + 1} / {QUESTIONS.length}
                                 </span>
                             </div>
-                        </div>
-
-                        {/* Mobile Image Strip */}
-                        <div className="md:hidden w-full flex justify-between items-center mb-4 px-2">
-                            <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">
-                                Questão {currentIndex + 1}
-                            </span>
                         </div>
 
                         {/* Direita: Pergunta */}
