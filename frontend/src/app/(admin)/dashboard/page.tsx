@@ -419,6 +419,21 @@ export default function DashboardPage() {
           // PRIORIDADE: Se o backend mandou 'capa', usa ela. Senão, usa a lógica antiga (md1, md2...)
           let imageUrl = (modulo as any).capa || (imageIndex > 0 ? `/img/md${imageIndex}.jpg` : '/img/fundo.png');
 
+          // OVERRIDE: Garante a imagem do Quiz (102) mesmo se o backend estiver desatualizado
+          if (modulo.id === 102) {
+            imageUrl = '/img/modulo_quiz.png';
+            // Também força URL direta se necessário, mas o layout do quiz é customizado em outra rota?
+            // Não, destinationUrl já é tratado abaixo ou pelo padrão. Sim: destinationUrl = /modulo/102 que deve redirecionar ou ser tratado. 
+            // Mas espere, o quiz tem rota /quiz? Não, o código atual trata rota /modulo/[id]. 
+            // Ah, o código abaixo tem: if (modulo.nome... 'quiz') destinationUrl = '/quiz'.
+            // Vou deixar só a imagem por enquanto.
+          }
+
+          if (modulo.nome.toLowerCase().includes('quiz')) {
+            destinationUrl = '/quiz';
+            imageUrl = '/img/modulo_quiz.png'; // Garante aqui também
+          }
+
           const userPlan = user?.plan || 'basic';
 
           // 7. LÓGICA DE BLOQUEIO ATUALIZADA com as chaves de produto
