@@ -236,7 +236,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
                     <div className="w-full h-full rounded-full bg-slate-800 flex items-center justify-center text-2xl relative overflow-hidden group-hover:bg-slate-700 transition-colors">
                       {user?.profileImage && !imageError ? (
                         <img
-                          src={getProfileImageUrl(user.profileImage) || ''}
+                          src={`${getProfileImageUrl(user.profileImage) || ''}?t=${Date.now()}`} // TIMESTAMP FORÇA O REFRESH
                           alt="Perfil"
                           className="w-full h-full object-cover"
                           onError={() => setImageError(true)}

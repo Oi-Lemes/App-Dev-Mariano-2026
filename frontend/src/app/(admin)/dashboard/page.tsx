@@ -206,7 +206,7 @@ export default function DashboardPage() {
   useEffect(() => {
     fetchData();
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'aula_concluida') {
+      if (event.key === 'aula_concluida' || event.key === 'quiz_state') { // Escuta mudanças no Quiz também
         fetchData();
         refetchUser();
       }
@@ -216,6 +216,35 @@ export default function DashboardPage() {
       window.removeEventListener('storage', handleStorageChange);
     };
   }, [fetchData, refetchUser]);
+
+  // --- NOVO: LER PROGRESSO DO QUIZ DO LOCALSTORAGE ---
+  useEffect(() => {
+    const checkQuizProgress = () => {
+      const savedState = localStorage.getItem('quiz_state');
+      if (savedState) {
+        try {
+          const { currentIndex } = JSON.parse(savedState);
+          if (typeof currentIndex === 'number') {
+            // Calcula % baseada em 15 questões (Hardcoded para alinhar com o quiz atual)
+            const quizPercent = Math.round(((currentIndex) / 15) * 100);
+
+            setProgressoModulos(prev => {
+              // Só atualiza se o backend não disser que já completou (100)
+              if ((prev[102] || 0) < 100) {
+                return { ...prev, 102: quizPercent };
+              }
+              return prev;
+            });
+          }
+        } catch (e) { console.error(e); }
+      }
+    };
+
+    checkQuizProgress(); // Roda ao montar
+    // Intervalo curto para garantir que atualize se ele voltar do quiz via "Voltar" do navegador
+    const interval = setInterval(checkQuizProgress, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   // 4. Função atualizada para o novo gateway (Paradise Pags)
   const handleOpenPixModal = async (productKey: keyof typeof PRODUCTS) => {
