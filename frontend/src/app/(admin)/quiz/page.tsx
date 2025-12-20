@@ -195,6 +195,34 @@ export default function QuizPage() {
         } catch (e) { console.error("Audio error", e); }
     };
 
+    // Função para imprimir direto do Quiz (usa a mesma lógica da página de certificado)
+    const [isGenerating, setIsGenerating] = useState(false);
+    const handlePrintCertificate = async () => {
+        setIsGenerating(true);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/certificate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ safeStudentName: null }), // Backend usa o nome do user se for null
+            });
+            if (!response.ok) throw new Error('Erro ao gerar');
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `meu_certificado.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch (e) {
+            alert('Erro ao gerar certificado. Tente novamente.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const finishGame = async (finalScoreValue: number) => {
         setGameFinished(true);
         // Ensure accurate final calculation
