@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 
-// --- DATABASE DE 30 PERGUNTAS SOBRE PLANTAS MEDICINAIS ---
+// --- DATABASE DE 30 PERGUNTAS SOBRE PLANTAS MEDICINAIS (Reduced to 15) ---
 const QUESTIONS = [
     {
         id: 1,
@@ -133,8 +133,8 @@ const QUESTIONS = [
 
 // Fallback de URL de áudio caso o arquivo local falhe
 const SOUNDS = {
-    correct: "/sounds/tada-fanfare-a-6313.mp3",
-    wrong: "/sounds/error-126627.mp3",
+    correct: "/sounds/correct.mp3",
+    wrong: "/sounds/wrong.mp3",
     win: "https://actions.google.com/sounds/v1/crowds/crowd_cheer.ogg"
 };
 
@@ -186,7 +186,7 @@ export default function QuizPage() {
     const playSound = (type: 'correct' | 'wrong' | 'win') => {
         try {
             const audio = new Audio(SOUNDS[type]);
-            audio.volume = 1.0;
+            audio.volume = type === 'win' ? 0.6 : 1.0;
             const playPromise = audio.play();
 
             if (playPromise !== undefined) {
@@ -251,12 +251,48 @@ export default function QuizPage() {
                     });
                 }
             } catch (e) { console.error("Erro ao salvar quiz", e); }
+
+            // Redirect after 4 seconds
+            setTimeout(() => {
+                router.push('/certificado');
+            }, 4000);
+
+        } else {
+            playSound('wrong');
         }
     };
 
-    const progress = ((currentIndex + 1) / QUESTIONS.length) * 100;
     const percentage = Math.round((score / QUESTIONS.length) * 100);
     const passed = percentage >= 60;
+    const progress = ((currentIndex + 1) / QUESTIONS.length) * 100;
+
+    // Circular Progress Component
+    const CircularProgress = ({ value, total, size = 50, strokeWidth = 5 }: any) => {
+        const radius = (size - strokeWidth) / 2;
+        const circumference = radius * 2 * Math.PI;
+        const offset = circumference - (value / total) * circumference;
+
+        return (
+            <div className="relative flex items-center justify-center" style={{ width: size, height: size }}>
+                <svg className="transform -rotate-90 w-full h-full">
+                    <circle cx={size / 2} cy={size / 2} r={radius} stroke="#334155" strokeWidth={strokeWidth} fill="none" />
+                    <circle
+                        cx={size / 2} cy={size / 2} r={radius}
+                        stroke="#10b981"
+                        strokeWidth={strokeWidth}
+                        fill="none"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={offset}
+                        strokeLinecap="round"
+                        className="transition-all duration-500 ease-out"
+                    />
+                </svg>
+                <div className="absolute text-xs font-bold text-white">
+                    {value}/{total}
+                </div>
+            </div>
+        );
+    }
 
     // VIEW
     if (!started) {
@@ -282,9 +318,9 @@ export default function QuizPage() {
 
                         <button
                             onClick={() => playSound('correct')}
-                            className="text-sm text-gray-400 hover:text-white underline"
+                            className="text-sm text-gray-400 hover:text-white underline hover:bg-white/10 px-3 py-1 rounded transition-colors"
                         >
-                            Testar Som 🔊
+                            Testar Som (Clique aqui) 🔊
                         </button>
                     </div>
                 </div>
@@ -301,62 +337,41 @@ export default function QuizPage() {
                     animate={{ scale: 1, opacity: 1 }}
                     className="w-full max-w-3xl bg-[#1e293b]/90 backdrop-blur-xl rounded-[2.5rem] p-10 text-center shadow-2xl border border-[#334155]"
                 >
-                    <h2 className="text-4xl font-bold text-white mb-8">{passed ? "APROVADO!" : "Reprovado"}</h2>
+                    <h2 className="text-4xl font-bold text-white mb-2">{passed ? "APROVADO!" : "Reprovado"}</h2>
+                    {passed && <p className="text-emerald-400 mb-6 animate-pulse">Redirecionando para o Certificado em instantes...</p>}
 
                     {/* DOUBLE CIRCLES: ACERTOS vs ERROS */}
-                    <div className="flex flex-col md:flex-row justify-center gap-12 mb-10">
+                    <div className="flex flex-col md:flex-row justify-center gap-12 mb-8 mt-4">
                         {/* Circle 1: Acertos (Green) */}
                         <div className="flex flex-col items-center">
-                            <div className="relative w-40 h-40 mb-4">
+                            <div className="relative w-32 h-32 mb-2">
                                 <svg className="w-full h-full -rotate-90">
-                                    <circle cx="80" cy="80" r="70" stroke="#334155" strokeWidth="12" fill="none" />
-                                    <motion.circle
-                                        cx="80" cy="80" r="70"
-                                        stroke="#10b981"
-                                        strokeWidth="12"
-                                        fill="none"
-                                        strokeDasharray="440"
-                                        strokeDashoffset={440 - (440 * percentage) / 100}
-                                        initial={{ strokeDashoffset: 440 }}
-                                        animate={{ strokeDashoffset: 440 - (440 * percentage) / 100 }}
-                                        transition={{ duration: 1.5, ease: "easeOut" }}
-                                        strokeLinecap="round"
-                                    />
+                                    <circle cx="64" cy="64" r="56" stroke="#334155" strokeWidth="10" fill="none" />
+                                    <circle cx="64" cy="64" r="56" stroke="#10b981" strokeWidth="10" fill="none" strokeDasharray="351" strokeDashoffset={351 - (351 * percentage) / 100} strokeLinecap="round" />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-bold text-emerald-400">{score}</span>
-                                    <span className="text-xs text-gray-400 uppercase">Acertos</span>
+                                    <span className="text-3xl font-bold text-emerald-400">{score}</span>
+                                    <span className="text-[10px] text-gray-400 uppercase">Acertos</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Circle 2: Erros (Red) */}
                         <div className="flex flex-col items-center">
-                            <div className="relative w-40 h-40 mb-4">
+                            <div className="relative w-32 h-32 mb-2">
                                 <svg className="w-full h-full -rotate-90">
-                                    <circle cx="80" cy="80" r="70" stroke="#334155" strokeWidth="12" fill="none" />
-                                    <motion.circle
-                                        cx="80" cy="80" r="70"
-                                        stroke="#ef4444"
-                                        strokeWidth="12"
-                                        fill="none"
-                                        strokeDasharray="440"
-                                        strokeDashoffset={440 - (440 * (100 - percentage)) / 100}
-                                        initial={{ strokeDashoffset: 440 }}
-                                        animate={{ strokeDashoffset: 440 - (440 * (100 - percentage)) / 100 }}
-                                        transition={{ duration: 1.5, ease: "easeOut", delay: 0.2 }}
-                                        strokeLinecap="round"
-                                    />
+                                    <circle cx="64" cy="64" r="56" stroke="#334155" strokeWidth="10" fill="none" />
+                                    <circle cx="64" cy="64" r="56" stroke="#ef4444" strokeWidth="10" fill="none" strokeDasharray="351" strokeDashoffset={351 - (351 * (100 - percentage)) / 100} strokeLinecap="round" />
                                 </svg>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <span className="text-4xl font-bold text-red-500">{QUESTIONS.length - score}</span>
+                                    <span className="text-3xl font-bold text-red-500">{QUESTIONS.length - score}</span>
                                     <span className="text-xs text-gray-400 uppercase">Erros</span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <p className="text-lg text-gray-300 mb-10">
+                    <p className="text-lg text-gray-300 mb-8">
                         {passed
                             ? "Parabéns! Você demonstrou excelência nos saberes naturais. Seu certificado foi desbloqueado."
                             : `Você acertou ${percentage}%. Precisa de no mínimo 60%. Revise o material e tente novamente.`}
@@ -368,18 +383,18 @@ export default function QuizPage() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => { localStorage.removeItem('quiz_state'); window.location.reload(); }}
-                                className="px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold transition-all"
+                                className="px-8 py-4 bg-white text-black rounded-xl font-bold transition-all shadow-lg hover:bg-gray-200"
                             >
-                                Tentar Novamente 🔄
+                                Refazer Prova 🔄
                             </motion.button>
                         )}
                         <Link href="/dashboard">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold shadow-lg transition-all"
+                                className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold shadow-lg transition-all"
                             >
-                                Voltar à Área de Membros 🏠
+                                Sair 🏠
                             </motion.button>
                         </Link>
                     </div>
@@ -393,14 +408,17 @@ export default function QuizPage() {
     return (
         <div className="min-h-screen bg-black/90 flex flex-col relative font-sans overflow-hidden">
 
-            {/* Top Bar Progress */}
-            <div className="w-full h-2 bg-gray-800 fixed top-0 left-0 z-50">
-                <motion.div
-                    className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
-                    initial={{ width: 0 }}
-                    animate={{ width: `${progress}%` }}
-                    transition={{ duration: 0.5 }}
-                />
+            {/* Top Bar with Circular Progress */}
+            <div className="w-full h-20 px-6 flex items-center justify-between border-b border-white/5 bg-[#0f172a]">
+                <div className="flex items-center gap-4">
+                    <Link href="/dashboard" className="text-gray-400 hover:text-white transition-colors">
+                        &larr; Sair
+                    </Link>
+                </div>
+                <div className="flex items-center gap-4">
+                    <span className="text-sm text-gray-400 uppercase tracking-widest hidden md:block">Questão Atual</span>
+                    <CircularProgress value={currentIndex + 1} total={QUESTIONS.length} size={50} />
+                </div>
             </div>
 
             <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-8 pt-8">
