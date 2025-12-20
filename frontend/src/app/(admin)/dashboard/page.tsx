@@ -223,13 +223,20 @@ export default function DashboardPage() {
       const savedState = localStorage.getItem('quiz_state');
       if (savedState) {
         try {
-          const { currentIndex } = JSON.parse(savedState);
+          const { currentIndex, gameFinished } = JSON.parse(savedState);
+
+          // SE TERMINOU O JOGO, É 100%
+          if (gameFinished) {
+            setProgressoModulos(prev => ({ ...prev, 102: 100 }));
+            return;
+          }
+
           if (typeof currentIndex === 'number') {
-            // Calcula % baseada em 15 questões (Hardcoded para alinhar com o quiz atual)
+            // Calcula % baseada em 15 questões
             const quizPercent = Math.round(((currentIndex) / 15) * 100);
 
             setProgressoModulos(prev => {
-              // Só atualiza se o backend não disser que já completou (100)
+              // Só atualiza se o backend não disser que já completou (100) e se não for 100 localmente ainda
               if ((prev[102] || 0) < 100) {
                 return { ...prev, 102: quizPercent };
               }
@@ -241,8 +248,7 @@ export default function DashboardPage() {
     };
 
     checkQuizProgress(); // Roda ao montar
-    // Intervalo curto para garantir que atualize se ele voltar do quiz via "Voltar" do navegador
-    const interval = setInterval(checkQuizProgress, 1000);
+    const interval = setInterval(checkQuizProgress, 1000); // Polling para atualização real-time
     return () => clearInterval(interval);
   }, []);
 
