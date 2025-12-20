@@ -507,7 +507,7 @@ export default function QuizPage() {
                             <div className="grid grid-cols-1 gap-4">
                                 {q.options.map((opt, idx) => {
                                     let statusClass = "bg-[#0f172a] border-[#334155] text-gray-300";
-                                    let hoverEffect = { scale: 1.02, x: 10, borderColor: "#34d399" };
+                                    let hoverEffect: any = { scale: 1.02, x: 10, borderColor: "#34d399" };
 
                                     if (showResult) {
                                         hoverEffect = {}; // Desativa hover effect
