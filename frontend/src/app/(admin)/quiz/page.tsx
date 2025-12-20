@@ -274,10 +274,34 @@ export default function QuizPage() {
     const acertoAudio = useRef<HTMLAudioElement | null>(null);
     const erroAudio = useRef<HTMLAudioElement | null>(null);
 
+    // PERSISTENCE EFFECT
     useEffect(() => {
+        // Load state
+        const savedState = localStorage.getItem('quiz_state');
+        if (savedState) {
+            const parsed = JSON.parse(savedState);
+            // Only restore if not finished or if user wants to see result
+            if (!parsed.gameFinished) {
+                setCurrentIndex(parsed.currentIndex);
+                setScore(parsed.score);
+                setStarted(true);
+            }
+        }
+
+        // Init Audio
         acertoAudio.current = new Audio(SOUNDS.correct);
         erroAudio.current = new Audio(SOUNDS.wrong);
     }, []);
+
+    // UPDATE STORAGE
+    useEffect(() => {
+        if (started && !gameFinished) {
+            localStorage.setItem('quiz_state', JSON.stringify({ currentIndex, score, gameFinished: false }));
+        }
+        if (gameFinished) {
+            localStorage.removeItem('quiz_state'); // Clear on finish
+        }
+    }, [currentIndex, score, started, gameFinished]);
 
     const playSound = (type: 'correct' | 'wrong' | 'win') => {
         try {
@@ -325,24 +349,14 @@ export default function QuizPage() {
         if (currentIndex + 1 < QUESTIONS.length) {
             setCurrentIndex(curr => curr + 1);
         } else {
-            finishGame();
+            finishGame(score + (isCorrect ? 1 : 0)); // Pass final score for accuracy
         }
     };
 
-    const finishGame = async () => {
+    const finishGame = async (finalScoreValue: number) => {
         setGameFinished(true);
-        const finalPercentage = Math.round(((score + (isCorrect ? 1 : 0)) / QUESTIONS.length) * 100);
-        // Nota: 'score' ainda não atualizou no closures aqui se foi o último clique? 
-        // Correção: score atualiza no state, mas aqui precisamos do valor final.
-        // Melhor usar um useEffect ou calcular baseado no render.
-        // Simplificando: o setScore é assíncrono. Vamos recalcular:
-        let finalScore = score;
-        // hack: se acabou de acertar esta ultima, o state score ainda não subiu no fluxo síncrono
-        // mas espere, 'nextQuestion' é chamado DEPOIS do clique.
-        // O usuário clica -> showResult=true -> score++ (async).
-        // Usuário clica "Next" -> nextQuestion. Score já deve estar atualizado.
-
-        if (finalScore >= (QUESTIONS.length * 0.6)) {
+        // Ensure accurate final calculation
+        if (finalScoreValue >= (QUESTIONS.length * 0.6)) {
             playSound('win');
             confetti({ particleCount: 500, spread: 120, startVelocity: 45 });
 
@@ -433,7 +447,7 @@ export default function QuizPage() {
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => window.location.reload()}
+                                onClick={() => { localStorage.removeItem('quiz_state'); window.location.reload(); }}
                                 className="px-8 py-4 bg-gray-600 hover:bg-gray-500 text-white rounded-xl font-bold"
                             >
                                 Tentar Novamente
@@ -457,61 +471,67 @@ export default function QuizPage() {
     const q = QUESTIONS[currentIndex];
 
     return (
-        <div className="min-h-screen bg-[#0f172a] flex flex-col relative font-sans overflow-hidden">
+        <div className="min-h-screen bg-black/90 flex flex-col relative font-sans overflow-hidden">
 
             {/* Top Bar Progress */}
-            <div className="w-full h-3 bg-[#1e293b] fixed top-0 left-0 z-50">
+            <div className="w-full h-2 bg-gray-800 fixed top-0 left-0 z-50">
                 <motion.div
-                    className="h-full bg-gradient-to-r from-emerald-500 via-teal-400 to-cyan-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]"
+                    className="h-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.8)]"
                     initial={{ width: 0 }}
                     animate={{ width: `${progress}%` }}
                     transition={{ duration: 0.5 }}
                 />
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 pt-12">
+            <div className="flex-1 flex flex-col items-center justify-center p-2 md:p-8 pt-8">
 
                 <AnimatePresence mode='wait'>
                     <motion.div
                         key={currentIndex}
-                        initial={{ y: 50, opacity: 0, scale: 0.95 }}
-                        animate={{ y: 0, opacity: 1, scale: 1 }}
-                        exit={{ y: -50, opacity: 0, scale: 0.95 }}
-                        transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                        className="w-full max-w-4xl bg-[#1e293b] rounded-[3rem] overflow-hidden shadow-2xl border border-[#334155] flex flex-col md:flex-row min-h-[60vh] md:min-h-[500px]"
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        exit={{ y: -20, opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="w-full max-w-5xl bg-transparent flex flex-col md:flex-row min-h-[50vh] md:min-h-[400px]"
                     >
                         {/* Esquerda: Imagem */}
-                        <div className="md:w-1/3 relative h-48 md:h-auto overflow-hidden">
+                        <div className="hidden md:block md:w-1/3 relative overflow-hidden rounded-3xl mr-6">
                             <Image
                                 src={q.image}
                                 alt="Topic"
                                 layout="fill"
                                 objectFit="cover"
-                                className="hover:scale-110 transition-transform duration-700"
+                                className="hover:scale-105 transition-transform duration-700"
                                 onError={(e) => e.currentTarget.src = '/img/fundo.png'}
                             />
-                            <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-black/80 to-transparent"></div>
-                            <div className="absolute top-6 left-6 z-10">
-                                <span className="bg-black/50 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full font-mono text-sm">
+                            <div className="absolute top-4 left-4 z-10">
+                                <span className="bg-black/60 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold tracking-widest border border-white/10">
                                     {currentIndex + 1} / {QUESTIONS.length}
                                 </span>
                             </div>
                         </div>
 
+                        {/* Mobile Image Strip (Optional or removed for cleanliness, keeping simple) */}
+                        <div className="md:hidden w-full flex justify-between items-center mb-4 px-2">
+                            <span className="bg-white/10 text-white px-3 py-1 rounded-full text-xs font-bold">
+                                Questão {currentIndex + 1}
+                            </span>
+                        </div>
+
                         {/* Direita: Pergunta */}
-                        <div className="flex-1 p-6 md:p-10 flex flex-col justify-center relative">
-                            <h2 className="text-2xl md:text-3xl font-bold text-white mb-8 leading-snug">
+                        <div className="flex-1 flex flex-col justify-center relative">
+                            <h2 className="text-xl md:text-3xl font-bold text-white mb-6 leading-snug drop-shadow-md">
                                 {q.question}
                             </h2>
 
-                            <div className="grid grid-cols-1 gap-4">
+                            <div className="grid grid-cols-1 gap-3">
                                 {q.options.map((opt, idx) => {
-                                    let statusClass = "bg-[#0f172a] border-[#334155] text-gray-300";
-                                    let hoverEffect: any = { scale: 1.02, x: 10, borderColor: "#34d399" };
+                                    let statusClass = "bg-white/5 border-white/10 hover:bg-white/10 text-gray-200";
+                                    let hoverEffect: any = { scale: 1.01, backgroundColor: "rgba(255,255,255,0.1)" };
 
                                     if (showResult) {
-                                        hoverEffect = {}; // Desativa hover effect
-                                        if (idx === q.correctAnswer) statusClass = "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-[0_0_20px_rgba(16,185,129,0.2)]";
+                                        hoverEffect = {};
+                                        if (idx === q.correctAnswer) statusClass = "bg-emerald-500/20 border-emerald-500 text-emerald-400 font-bold";
                                         else if (idx === selectedOption) statusClass = "bg-red-500/20 border-red-500 text-red-300";
                                         else statusClass = "opacity-30 grayscale";
                                     }
@@ -523,11 +543,11 @@ export default function QuizPage() {
                                             whileTap={!showResult ? { scale: 0.98 } : {}}
                                             onClick={() => handleOptionClick(idx)}
                                             disabled={showResult}
-                                            className={`w-full p-5 rounded-2xl border-2 text-left text-lg font-medium transition-colors flex items-center justify-between group ${statusClass}`}
+                                            className={`w-full p-4 rounded-xl border text-left text-base md:text-lg transition-all flex items-center justify-between group ${statusClass}`}
                                         >
                                             <span className="w-[90%]">{opt}</span>
-                                            {showResult && idx === q.correctAnswer && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-2xl">✅</motion.span>}
-                                            {showResult && idx === selectedOption && idx !== q.correctAnswer && <motion.span initial={{ scale: 0 }} animate={{ scale: 1 }} className="text-2xl">❌</motion.span>}
+                                            {showResult && idx === q.correctAnswer && <span className="text-xl">✅</span>}
+                                            {showResult && idx === selectedOption && idx !== q.correctAnswer && <span className="text-xl">❌</span>}
                                         </motion.button>
                                     );
                                 })}
@@ -537,24 +557,22 @@ export default function QuizPage() {
                             <AnimatePresence>
                                 {showResult && (
                                     <motion.div
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        className="mt-6 pt-6 border-t border-[#334155]"
+                                        initial={{ opacity: 0, height: 0 }}
+                                        animate={{ opacity: 1, height: 'auto' }}
+                                        className="mt-4 pt-4 border-t border-white/10"
                                     >
-                                        <p className="text-gray-400 mb-4 text-sm"><strong className="text-amber-400 uppercase text-xs tracking-wider">Explicação:</strong> {q.explanation}</p>
+                                        <p className="text-gray-400 mb-3 text-sm"><strong className="text-amber-400">INFO:</strong> {q.explanation}</p>
                                         <motion.button
-                                            whileHover={{ scale: 1.03 }}
+                                            whileHover={{ scale: 1.02 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={nextQuestion}
-                                            className="w-full py-4 bg-white text-black font-extrabold rounded-xl shadow-xl hover:bg-gray-200 transition-colors"
+                                            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-white font-bold rounded-lg shadow-lg transition-colors"
                                         >
-                                            CONTINUAR &rarr;
+                                            PRÓXIMA &rarr;
                                         </motion.button>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-                        </div>
-
                     </motion.div>
                 </AnimatePresence>
             </div>
