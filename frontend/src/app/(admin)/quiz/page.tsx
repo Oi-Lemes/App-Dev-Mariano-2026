@@ -416,32 +416,31 @@ export default function QuizPage() {
                     </p>
 
                     <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-                        <div className="flex flex-col md:flex-row gap-4 justify-center items-center">
-                            {/* Botão de Refazer (Com Confirmação) - Disponível sempre que terminar */}
+                        {/* Botão de Refazer (Com Confirmação) - Disponível sempre que terminar */}
+                        <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => {
+                                if (confirm("Tem certeza que deseja refazer a prova? Seu progresso atual de 100% será resetado.")) {
+                                    localStorage.removeItem('quiz_state');
+                                    window.location.reload();
+                                }
+                            }}
+                            className="w-full md:w-auto px-8 py-4 bg-white text-black rounded-xl font-bold transition-all shadow-lg hover:bg-gray-200"
+                        >
+                            Refazer Prova 🔄
+                        </motion.button>
+
+                        <Link href="/dashboard">
                             <motion.button
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                onClick={() => {
-                                    if (confirm("Tem certeza que deseja refazer a prova? Seu progresso atual de 100% será resetado.")) {
-                                        localStorage.removeItem('quiz_state');
-                                        window.location.reload();
-                                    }
-                                }}
-                                className="w-full md:w-auto px-8 py-4 bg-white text-black rounded-xl font-bold transition-all shadow-lg hover:bg-gray-200"
+                                className="w-full md:w-auto px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold shadow-lg transition-all"
                             >
-                                Refazer Prova 🔄
+                                Voltar ao Dashboard 🏠
                             </motion.button>
-
-                            <Link href="/dashboard">
-                                <motion.button
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="w-full md:w-auto px-8 py-4 bg-gray-700 hover:bg-gray-600 text-white rounded-xl font-bold shadow-lg transition-all"
-                                >
-                                    Voltar ao Dashboard 🏠
-                                </motion.button>
-                            </Link>
-                        </div>
+                        </Link>
+                    </div>
                 </motion.div>
             </div>
         );
