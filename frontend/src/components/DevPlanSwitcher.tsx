@@ -74,22 +74,10 @@ export const DevPlanSwitcher = () => {
             className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-800 text-xs flex justify-between items-center transition-colors ${user.plan === 'basic' ? 'bg-gray-800 ring-1 ring-gray-500' : ''}`}
           >
             <div className="text-gray-300">
-              <span className="block font-bold">Nível 1: Básico</span>
-              <span className="text-[10px] opacity-70">Trava após Módulo 6</span>
+              <span className="block font-bold">Plano Básico</span>
+              <span className="text-[10px] opacity-70">Trava +Módulo 6 & Sem Nina</span>
             </div>
             {user.plan === 'basic' && <span className="text-green-500 text-lg">✓</span>}
-          </button>
-
-          <button
-            onClick={() => handleUpdate('premium', false, false)}
-            disabled={loading}
-            className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-800 text-xs flex justify-between items-center transition-colors ${user.plan === 'premium' ? 'bg-gray-800 ring-1 ring-amber-500/50' : ''}`}
-          >
-            <div className="text-amber-300">
-              <span className="block font-bold">Nível 2: Premium</span>
-              <span className="text-[10px] opacity-70">Libera Módulos • Trava Live</span>
-            </div>
-            {user.plan === 'premium' && <span className="text-green-500 text-lg">✓</span>}
           </button>
 
           <button
@@ -98,7 +86,7 @@ export const DevPlanSwitcher = () => {
             className={`w-full text-left px-3 py-3 rounded-lg hover:bg-gray-800 text-xs flex justify-between items-center transition-colors ${user.plan === 'ultra' ? 'bg-gray-800 ring-1 ring-purple-500/50' : ''}`}
           >
             <div className="text-purple-300">
-              <span className="block font-bold">Nível 3: Ultra</span>
+              <span className="block font-bold">Plano PRO (Total)</span>
               <span className="text-[10px] opacity-70">Tudo Liberado</span>
             </div>
             {user.plan === 'ultra' && <span className="text-green-500 text-lg">✓</span>}
