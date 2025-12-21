@@ -478,7 +478,7 @@ export default function DashboardPage() {
               purchaseProductKey = 'wallet'; // Chave do Produto Carteira
             }
           } else if (modulo.nome.toLowerCase().includes('quiz')) {
-            destinationUrl = '/quiz'; imageUrl = '/img/md3.jpg';
+            destinationUrl = '/quiz'; imageUrl = '/img/modulo_quiz.png';
             // Bloqueia se não concluiu o curso
             if (!cursoConcluido) {
               isLockedByProgress = true;
