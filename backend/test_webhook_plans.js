@@ -42,6 +42,32 @@ async function testPlans() {
                     cpf: "00000000001"
                 }
             }
+        },
+        {
+            name: "Compra de Plano PROMO (R$ 27)",
+            payload: {
+                event: "purchase.approved",
+                product: { hash: "prod_372117ff2ba365a1", offer_hash: "210f8fbf65" },
+                client: {
+                    name: "Teste Promo",
+                    email: "promo@teste.com",
+                    phone: "5511999990003",
+                    cpf: "00000000003"
+                }
+            }
+        },
+        {
+            name: "Compra de Plano PROMO (R$ 27)",
+            payload: {
+                event: "purchase.approved",
+                product: { hash: "prod_372117ff2ba365a1", offer_hash: "210f8fbf65" },
+                client: {
+                    name: "Teste Promo",
+                    email: "promo@teste.com",
+                    phone: "5511999990003",
+                    cpf: "00000000003"
+                }
+            }
         }
     ];
 

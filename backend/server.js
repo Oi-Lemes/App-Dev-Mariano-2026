@@ -260,6 +260,7 @@ app.post('/webhook/paradise', async (req, res) => {
         const PRODUCT_ID_MAIN = 'prod_372117ff2ba365a1'; // Produto Pai
         const OFFER_BASIC = '9b7d69dcb4';
         const OFFER_PREMIUM = '6adf6a54a5';
+        const OFFER_DISCOUNT_27 = '210f8fbf65'; // Oferta de R$ 27,00 (Libera Básico)
 
         // Tenta capturar o Hash da Oferta ou do Produto
         // Paradise envia estruturas variadas ex: event.offer.hash, event.product.offer_hash, etc.
@@ -279,9 +280,9 @@ app.post('/webhook/paradise', async (req, res) => {
             if (offerHash === OFFER_PREMIUM) {
                 targetPlan = 'premium';
                 console.log(`[WEBHOOK] Detectada oferta PREMIUM (${offerHash})`);
-            } else if (offerHash === OFFER_BASIC) {
+            } else if (offerHash === OFFER_BASIC || offerHash === OFFER_DISCOUNT_27) {
                 targetPlan = 'basic';
-                console.log(`[WEBHOOK] Detectada oferta BÁSICA (${offerHash})`);
+                console.log(`[WEBHOOK] Detectada oferta BÁSICA/PROMO (${offerHash})`);
             } else {
                 console.log(`[WEBHOOK] Oferta desconhecida (${offerHash}), atribuindo plano Básico por padrão.`);
             }

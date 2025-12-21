@@ -81,6 +81,11 @@ const PRODUCTS = {
     amount: 4700,         // Valor Estimado (ajuste se necessário)
     title: 'Plano Básico'
   },
+  promo: {
+    hash: '210f8fbf65', // Oferta Promoção (Libera Básico)
+    amount: 2700,
+    title: 'Plano Promocional'
+  },
   premium: {
     hash: '6adf6a54a5', // Oferta Premium
     amount: 9700,
