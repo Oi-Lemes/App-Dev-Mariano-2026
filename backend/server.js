@@ -326,6 +326,10 @@ app.post('/webhook/paradise', async (req, res) => {
         const OFFER_PREMIUM = '6adf6a54a5';
         const OFFER_DISCOUNT_27 = '210f8fbf65'; // Oferta de R$ 27,00 (Libera Básico)
 
+        // NOVOS PRODUTOS (HASHES DEFINITIVOS)
+        const PROD_CERTIFICADO = 'prod_0bc162e2175f527f';
+        const PROD_NINA = 'prod_0d6f903b6855c714';
+
         // Tenta capturar o Hash da Oferta ou do Produto
         // Paradise envia estruturas variadas ex: event.offer.hash, event.product.offer_hash, etc.
         const offerHash = (event.offer && event.offer.hash) ||
@@ -338,8 +342,10 @@ app.post('/webhook/paradise', async (req, res) => {
             const phone = client.phone ? client.phone.replace(/\D/g, '') : null;
             const cpf = client.cpf || client.document;
 
-            // Determina o Plano
+            // Determina o Plano e Acessos Extras
             let targetPlan = 'basic'; // Default seguro
+            let grantWalletAccess = false;
+            let grantNinaAccess = false;
 
             if (offerHash === OFFER_PREMIUM) {
                 targetPlan = 'premium';
@@ -347,6 +353,17 @@ app.post('/webhook/paradise', async (req, res) => {
             } else if (offerHash === OFFER_BASIC || offerHash === OFFER_DISCOUNT_27) {
                 targetPlan = 'basic';
                 console.log(`[WEBHOOK] Detectada oferta BÁSICA/PROMO (${offerHash})`);
+            } else if (offerHash === PROD_CERTIFICADO) {
+                // Compra de Certificado AVULSO (mantém plano atual, mas libera carteira)
+                // Como o upsert exige plano, mantemos 'basic' se não tiver, ou o atual se já tiver (handled by logic below?)
+                // Upsert sobrescreve? Sim. Então vamos assumir Basic com acesso extra.
+                targetPlan = 'basic';
+                grantWalletAccess = true;
+                console.log(`[WEBHOOK] Detectada compra de CERTIFICADO (${offerHash})`);
+            } else if (offerHash === PROD_NINA) {
+                targetPlan = 'basic';
+                grantNinaAccess = true;
+                console.log(`[WEBHOOK] Detectada compra de NINA (${offerHash})`);
             } else {
                 console.log(`[WEBHOOK] Oferta desconhecida (${offerHash}), atribuindo plano Básico por padrão.`);
             }
@@ -363,17 +380,38 @@ app.post('/webhook/paradise', async (req, res) => {
                 return res.status(200).send('OK, mas sem telefone');
             }
 
+            // FIX: Primeiro busca o user para não fazer downgrade acidental de Premium -> Basic
+            const existingUser = await prisma.user.findUnique({ where: { phone: phone } });
+
+            // Se já for Premium e comprou Certificado, MANTÉM Premium.
+            if (existingUser && existingUser.plan === 'premium') {
+                targetPlan = 'premium';
+            }
+
+            // Preserva acessos anteriores se já tiver
+            if (existingUser?.hasWalletAccess) grantWalletAccess = true;
+            if (existingUser?.hasNinaAccess) grantNinaAccess = true;
+
             const user = await prisma.user.upsert({
                 where: { phone: phone },
-                // Se já existe, atualiza para o plano novo (upgrade ou downgrade)
-                update: { plan: targetPlan, status: 'active', name: name, email: email },
+                // Se já existe, atualiza
+                update: {
+                    plan: targetPlan,
+                    status: 'active',
+                    name: name,
+                    email: email,
+                    hasWalletAccess: grantWalletAccess,
+                    hasNinaAccess: grantNinaAccess
+                },
                 create: {
                     phone: phone,
                     email: email || `${phone}@sememail.com`,
                     name: name || 'Aluno Novo',
                     plan: targetPlan,
                     status: 'active',
-                    cpf: cpf
+                    cpf: cpf,
+                    hasWalletAccess: grantWalletAccess,
+                    hasNinaAccess: grantNinaAccess
                 }
             });
             console.log(`[WEBHOOK] Usuário APROVADO: ${user.name} (${user.phone}) -> Plano: ${targetPlan}`);
