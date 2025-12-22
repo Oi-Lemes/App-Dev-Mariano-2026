@@ -137,7 +137,9 @@ export default function CertificadoPage() {
       setIsModalOpen(true);
     } catch (error) {
       console.error(error);
-      setPaymentError(error instanceof Error ? error.message : "Ocorreu um erro desconhecido.");
+      const msg = error instanceof Error ? error.message : "Ocorreu um erro desconhecido.";
+      alert(`Erro no PIX: ${msg}`); // ALERT AGRESSIVO PARA DEBUG
+      setPaymentError(msg);
     } finally {
       setIsLoadingPix(false);
     }
