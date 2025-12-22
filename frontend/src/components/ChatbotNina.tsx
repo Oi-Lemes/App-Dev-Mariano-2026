@@ -95,7 +95,11 @@ export default function ChatbotNina() {
 
             const data = await response.json();
             if (data.pix) {
-                setPixData(data.pix);
+                setPixData({
+                    ...data.pix,
+                    amount_paid: data.amount_paid,
+                    hash: data.hash
+                });
                 setShowPaymentModal(true);
             } else {
                 alert('Erro: Dados do PIX não retornados.');
