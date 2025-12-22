@@ -298,10 +298,21 @@ export default function DashboardPage() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
-      const response = await fetch(`${backendUrl}/gerar-pix-paradise`, {
+
+      // LÓGICA DE DECISÃO DE ROTA
+      let endpoint = '/gerar-pix-paradise';
+      let payload = JSON.stringify(paymentPayload);
+
+      // SE FOR CERTIFICADO, USA O TÚNEL DEDICADO (CORREÇÃO DEFINITIVA)
+      if (productKey === 'certificate') {
+        endpoint = '/gerar-pix-certificado-final';
+        payload = JSON.stringify({}); // Backend ignora body nesta rota
+      }
+
+      const response = await fetch(`${backendUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(paymentPayload),
+        body: payload,
       });
 
       const result = await response.json();
