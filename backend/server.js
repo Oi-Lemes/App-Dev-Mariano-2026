@@ -128,6 +128,7 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-secreto';
 const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
+console.log('🔑 PARADISE TOKEN (Início):', PARADISE_API_TOKEN ? PARADISE_API_TOKEN.substring(0, 10) + '...' : 'MISSING');
 
 
 app.use(express.json());
