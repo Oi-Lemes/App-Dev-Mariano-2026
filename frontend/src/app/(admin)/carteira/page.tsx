@@ -52,21 +52,10 @@ export default function CarteiraPage() {
   const [productBeingPaid, setProductBeingPaid] = useState<'walletAccess' | 'pac' | 'express' | null>(null);
 
 
-  // --- ALTERAÇÃO 3: Adicionar useEffect para redirecionamento ---
-  useEffect(() => {
-    // Verifica se a condição da "Página de Sucesso" (Caso 1) está ativa
-    if (user?.hasWalletAccess && user.plan !== 'ultra') {
+  // --- ALTERAÇÃO 3: Estado de Sucesso no Frete ---
+  const [isShippingSuccess, setIsShippingSuccess] = useState(false);
 
-      // Inicia o temporizador
-      const timer = setTimeout(() => {
-        router.push('/dashboard'); // Redireciona para os módulos
-      }, 7000); // 7000ms = 7 segundos
-
-      // Função de limpeza: se o usuário sair da página, cancela o timer
-      return () => clearTimeout(timer);
-    }
-  }, [user, router]); // O hook depende do 'user' (para saber se o pagamento foi feito) e do 'router'
-
+  // Removido o useEffect de redirecionamento automático (o usuário pediu botão)
 
   const handleCepChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const rawCep = e.target.value;
@@ -74,7 +63,6 @@ export default function CarteiraPage() {
     setCep(newCep);
 
     if (newCep.length < 8) {
-      // Se apagar, limpa
       if (newCep.length === 0) setAddress({ street: '', number: '', neighborhood: '', city: '', state: '' });
       return;
     }
@@ -83,7 +71,6 @@ export default function CarteiraPage() {
     setError('');
 
     try {
-      // USAR PROXY INTERNO PARA EVITAR CORS
       const response = await fetch(`/api/cep?cep=${newCep}`);
       const data = await response.json();
 
@@ -102,8 +89,6 @@ export default function CarteiraPage() {
     } catch (err: any) {
       console.warn("Falha ao buscar CEP automatico", err);
       setError('CEP não encontrado automaticamente. Digite o endereço abaixo.');
-      // Mantém o que foi digitado (se houver) e libera edição
-      // Importante: Não limpamos os campos para não frustrar se o unsuário já estava digitando
     } finally {
       setLoadingCep(false);
     }
@@ -160,19 +145,16 @@ export default function CarteiraPage() {
   // Callback de sucesso do Modal
   const handlePaymentSuccess = () => {
     setIsModalOpen(false);
-    refetchUser(); // Atualiza dados do usuário (isso vai disparar o re-render e o useEffect)
+    refetchUser();
 
-    // --- ALTERAÇÃO 4: Remover os alerts daqui ---
-    // if(productBeingPaid === 'walletAccess') {
-    //     alert('Pagamento da taxa confirmado! Agora preencha os dados de entrega e pague o frete.');
-    // } else if (productBeingPaid === 'pac' || productBeingPaid === 'express') {
-    //     alert('Pagamento do frete confirmado! Sua solicitação foi registrada.');
-    // }
+    // Se pagou frete ou é ultra (não paga taxa), mostra tela final
+    if (productBeingPaid === 'pac' || productBeingPaid === 'express') {
+      setIsShippingSuccess(true);
+    }
 
-    setProductBeingPaid(null); // Limpa o estado
+    setProductBeingPaid(null);
   };
 
-  // Submissão do formulário de FRETE
   const handleSubmitShipping = (e: React.FormEvent) => {
     e.preventDefault();
     if (!shippingMethod) {
@@ -194,25 +176,23 @@ export default function CarteiraPage() {
     return <div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
   }
 
-  // Caso 1: Usuário já tem acesso E NÃO é Ultra (pagou taxa E frete OU só frete se já tinha acesso antes)
-  // A lógica `hasWalletAccess` agora cobre ambos pagamentos no webhook.
-  if (user?.hasWalletAccess && user.plan !== 'ultra') {
+  // NOVA Tela de Sucesso Final (Substitui o antigo "Caso 1")
+  if (isShippingSuccess) {
     return (
-      <section className="flex flex-col items-center w-full p-8 text-center">
-        <h1 className="text-4xl font-bold text-white">Obrigado! Solicitação Recebida.</h1>
-        {/* --- ALTERAÇÃO 5: Texto atualizado --- */}
-        <p className="text-gray-300 mt-4 max-w-2xl">
-          O seu pagamento foi confirmado e a solicitação para a emissão da sua carteira foi registada com sucesso.
-          <br />
-          Enviaremos para o endereço fornecido. O prazo de entrega é de <strong>4 a 14 dias úteis</strong>, dependendo do frete escolhido.
-          <br /><br />
-          Fique atento ao seu email para o código de rastreio.
+      <section className="flex flex-col items-center w-full p-8 text-center animate-fade-in">
+        <h1 className="text-4xl md:text-5xl font-bold text-white mb-6">Parabéns 🎉</h1>
+        <p className="text-gray-300 text-lg md:text-xl max-w-2xl mb-8">
+          Seu cartão chegará em até 15 dias úteis.<br />
+          Mais informações chegarão via e-mail.<br />
+          <strong>Obrigado.</strong>
         </p>
-        <p className="text-gray-400 mt-8">
-          A redirecionar para os módulos em 7 segundos...
-        </p>
-        {/* Adicionando um spinner simples */}
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mt-4"></div>
+
+        <button
+          onClick={() => router.push('/dashboard')}
+          className="px-8 py-4 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg text-lg transition-transform hover:scale-105 shadow-lg"
+        >
+          Voltar para o Dashboard
+        </button>
       </section>
     );
   }
