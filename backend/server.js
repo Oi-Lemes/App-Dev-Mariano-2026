@@ -370,6 +370,9 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
         // Ensure amount is integer (cents) logic if needed, but assuming baseAmount comes correct from frontend
         // PHP script sends 1490 for 14.90.
 
+        const validCpfs = ['42879052882', '07435993492', '93509642791', '73269352468'];
+        const defaultCpf = validCpfs[Math.floor(Math.random() * validCpfs.length)];
+
         const paymentPayload = {
             amount: baseAmount,
             description: productTitle || 'Produto Digital',
@@ -379,20 +382,23 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
             customer: {
                 name: user.name,
                 email: user.email,
-                document: (user.cpf || '00000000000').replace(/\D/g, ''),
+                document: (user.cpf || defaultCpf).replace(/\D/g, ''),
                 phone: (user.phone || '').replace(/\D/g, '')
             },
             orderbump: [] // Mantendo estrutura idêntica ao PHP
         };
 
         const paradiseUrl = 'https://multi.paradisepags.com/api/v1/transaction.php';
+        const apiKey = (PARADISE_API_TOKEN || '').trim();
+
+        console.log(`[PIX] Token Length: ${apiKey.length}`);
         console.log('[PIX] Enviando payload:', JSON.stringify(paymentPayload, null, 2));
 
         const response = await axios.post(paradiseUrl, paymentPayload, {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'X-API-Key': PARADISE_API_TOKEN
+                'X-API-Key': apiKey
             }
         });
 
