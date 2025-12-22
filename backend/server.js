@@ -157,7 +157,8 @@ const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:3002',
     'https://areamembrosplantascompletinho-9n1c.vercel.app',
-    'https://areamembrosplantascompletinho-9n1c.vercel.app'
+    'https://areademembros.saberesdafloresta.site',
+    'https://www.areademembros.saberesdafloresta.site'
 ];
 
 if (process.env.FRONTEND_URL) {
