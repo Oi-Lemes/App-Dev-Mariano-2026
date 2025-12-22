@@ -407,6 +407,7 @@ export default function DashboardPage() {
         {modulosParaExibir.map((modulo) => {
           // Encontrar o índice no array JÁ ORDENADO de principais
           const indexPrincipal = modulosPrincipais.findIndex(mp => mp.id === modulo.id);
+          // userPlan already defined above
 
           // Lógica de Bloqueio Linear:
           // Se for o primeiro (index 0), nunca bloqueia.
