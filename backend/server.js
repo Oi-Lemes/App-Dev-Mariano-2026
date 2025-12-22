@@ -155,11 +155,17 @@ app.use(cors({
     origin: function (origin, callback) {
         if (!origin) return callback(null, true);
         if (process.env.FRONTEND_URL === '*') return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.endsWith('.vercel.app')) {
+
+        // Permite localhost, vercel e o domínio principal (e subdomínios)
+        const isAllowed = allowedOrigins.indexOf(origin) !== -1 ||
+            origin.endsWith('.vercel.app') ||
+            origin.includes('saberesdafloresta.site');
+
+        if (isAllowed) {
             callback(null, true);
         } else {
             console.log('CORS Blocked:', origin);
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error(`Not allowed by CORS: ${origin}`));
         }
     },
     optionsSuccessStatus: 200
