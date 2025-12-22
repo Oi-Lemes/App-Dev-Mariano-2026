@@ -454,10 +454,13 @@ export default function DashboardPage() {
             lockMessage = "";
           }
           if (modulo.nome.toLowerCase().includes('certificado')) {
+            // FIX CRITICO: Reseta herança de "Premium" do index >= 6
+            isPaywalled = false;
+            purchaseProductKey = null;
+
             destinationUrl = '/certificado'; imageUrl = '/img/md7.jpg';
+
             // Lógica de bloqueio do Certificado: Depende do Quiz (Modulo 102)
-            // AQUI ESTÁ A LÓGICA DE 60%: O progresso do módulo 102 reflete a nota (ex: 60 = 60%).
-            // Se o user passou, o progresso deve ser >= 60.
             const quizProgress = progressoModulos[102] ?? 0;
             const quizPassed = quizProgress >= 60; // Mínimo 60% de acerto
 
@@ -465,10 +468,12 @@ export default function DashboardPage() {
               isLockedByProgress = true;
               lockMessage = "Seja aprovado no Quiz (min. 60%) para liberar";
             }
-            else if (userPlan === 'basic' && !user?.hasWalletAccess) { // hasWalletAccess cobre Certificado e Carteira
-              isPaywalled = true; isLockedByProgress = false;
+            else if (userPlan === 'basic' && !user?.hasWalletAccess) {
+              // Se passou no quiz mas não comprou -> Paywall do CERTIFICADO
+              isPaywalled = true;
+              isLockedByProgress = false;
               lockMessage = "Adquira o certificado para emitir";
-              purchaseProductKey = 'certificate'; // FIX: Forçar chave correta para usar rota dedicada
+              purchaseProductKey = 'certificate'; // Chave correta para rota dedicada
             }
           } else if (modulo.nome.toLowerCase().includes('live')) {
             destinationUrl = '/live'; imageUrl = '/img/md8.jpg';
@@ -537,7 +542,7 @@ export default function DashboardPage() {
               <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
                 <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
                 <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
-                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
+                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description} (v2)
                 </p>
               </div>
               {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
