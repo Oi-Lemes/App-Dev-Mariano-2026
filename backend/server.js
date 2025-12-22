@@ -403,8 +403,10 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error('[PIX] Erro ao gerar:', error.response ? error.response.data : error.message);
-        res.status(500).json({ error: 'Erro ao processar pagamento.' });
+        const errorMsg = error.response && error.response.data ? JSON.stringify(error.response.data) : error.message;
+        console.error('[PIX] Erro detalhado:', errorMsg);
+        // Retorna o erro exato da API para o frontend mostrar no alert
+        res.status(400).json({ error: `Erro na Operadora: ${errorMsg}` });
     }
 });
 
