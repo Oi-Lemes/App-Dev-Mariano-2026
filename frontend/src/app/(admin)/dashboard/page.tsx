@@ -468,7 +468,7 @@ export default function DashboardPage() {
             else if (userPlan === 'basic' && !user?.hasWalletAccess) { // hasWalletAccess cobre Certificado e Carteira
               isPaywalled = true; isLockedByProgress = false;
               lockMessage = "Adquira o certificado para emitir";
-              purchaseProductKey = 'certificate'; // Chave do Produto Certificado
+              purchaseProductKey = 'certificate'; // FIX: Forçar chave correta para usar rota dedicada
             }
           } else if (modulo.nome.toLowerCase().includes('live')) {
             destinationUrl = '/live'; imageUrl = '/img/md8.jpg';
