@@ -119,10 +119,11 @@ export default function CertificadoPage() {
 
     try {
       const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
-      const response = await fetch(`${backendUrl}/gerar-pix-paradise`, {
+      // ROTA ESPECIAL DEDICADA (HARDCODED NO BACKEND)
+      const response = await fetch(`${backendUrl}/gerar-pix-certificado-final`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify(paymentPayload),
+        body: JSON.stringify({}), // Backend ignora o body para essa rota
       });
 
       const result = await response.json();
