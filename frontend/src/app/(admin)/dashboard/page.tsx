@@ -476,74 +476,71 @@ export default function DashboardPage() {
               lockMessage = "Exclusivo do plano Ultra ou compre agora";
               purchaseProductKey = 'wallet'; // Chave do Produto Carteira
             }
-          } else if (modulo.nome.toLowerCase().includes('quiz')) {
-            destinationUrl = '/quiz'; imageUrl = '/img/modulo_quiz.png';
-            // Bloqueia se não concluiu o curso
-            if (!cursoConcluido) {
-              isLockedByProgress = true;
-              lockMessage = "Conclua todas as aulas para liberar o Quiz Final";
+            if (modulo.nome.toLowerCase().includes('quiz')) {
+              destinationUrl = '/quiz';
+              imageUrl = '/img/modulo_quiz.png';
+              isLockedByProgress = false; // DESBLOQUEIO TOTAL
             }
-          }
 
-          const isLocked = isLockedByProgress && !isPaywalled;
-          const finalOnClick = isPaywalled && purchaseProductKey ? (e: React.MouseEvent) => { e.preventDefault(); handleOpenPixModal(purchaseProductKey!); } : undefined;
+            const isLocked = isLockedByProgress && !isPaywalled;
+            const finalOnClick = isPaywalled && purchaseProductKey ? (e: React.MouseEvent) => { e.preventDefault(); handleOpenPixModal(purchaseProductKey!); } : undefined;
 
-          // Classes Dinâmicas:
-          // - Se bloqueado/paywall: grayscale alto, sem cursor
-          // - Se concluído: grayscale leve (visual "terminado"), mas ainda clicável e brilhante
-          // - Se normal: hover scale e shadow
-          // Lógica Especial: Módulos Pagos/Extras (ID >= 90) nunca ficam cinza, para chamar atenção
-          const isSpecialModule = modulo.id >= 90;
+            // Classes Dinâmicas:
+            // - Se bloqueado/paywall: grayscale alto, sem cursor
+            // - Se concluído: grayscale leve (visual "terminado"), mas ainda clicável e brilhante
+            // - Se normal: hover scale e shadow
+            // Lógica Especial: Módulos Pagos/Extras (ID >= 90) nunca ficam cinza, para chamar atenção
+            const isSpecialModule = modulo.id >= 90;
 
-          const shouldApplyGrayscale = isCompleted && modulo.id <= 6;
+            const shouldApplyGrayscale = isCompleted && modulo.id <= 6;
 
-          const linkClassName = `group relative block rounded-lg overflow-hidden transition-all duration-500 transform 
+            const linkClassName = `group relative block rounded-lg overflow-hidden transition-all duration-500 transform 
             ${isPaywalled
-              ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40'
-              : isLocked
-                ? (isSpecialModule
-                  ? 'cursor-not-allowed contrast-75 brightness-75' // Bloqueado mas colorido (sem grayscale)
-                  : 'cursor-not-allowed filter grayscale contrast-75 brightness-75' // Bloqueado normal (cinza)
-                )
-                : isCompleted
-                  ? 'hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 opacity-90 hover:opacity-100 ring-2 ring-emerald-500/30'
-                  : 'hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40' // Normal
-            }`;
+                ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40'
+                : isLocked
+                  ? (isSpecialModule
+                    ? 'cursor-not-allowed contrast-75 brightness-75' // Bloqueado mas colorido (sem grayscale)
+                    : 'cursor-not-allowed filter grayscale contrast-75 brightness-75' // Bloqueado normal (cinza)
+                  )
+                  : isCompleted
+                    ? 'hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 opacity-90 hover:opacity-100 ring-2 ring-emerald-500/30'
+                    : 'hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40' // Normal
+              }`;
 
-          return (
-            <Link key={modulo.id} href={isLocked || isPaywalled ? '#' : destinationUrl} onClick={finalOnClick} className={linkClassName}>
-              <div className="relative w-full h-80">
-                <Image
-                  src={imageUrl}
-                  alt={modulo.nome}
-                  layout="fill"
-                  objectFit="cover"
-                  className={`transition-transform duration-500 group-hover:scale-110 ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
-                  onError={(e) => { e.currentTarget.src = '/img/fundo.png'; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              </div>
-              <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
-                <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
-                <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
-                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
-                </p>
-              </div>
-              {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
-              {(isLocked || isPaywalled) && (
-                <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 text-center">
-                  <span className="font-bold text-amber-400">{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
-                  <span className="text-xs">{lockMessage}</span>
-                  {isPaywalled && (
-                    <button className="mt-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full hover:bg-amber-400">
-                      {isLoadingPix && productKeyToBuy === purchaseProductKey ? 'A gerar...' : 'Liberar Acesso'}
-                    </button>
-                  )}
+            return (
+              <Link key={modulo.id} href={isLocked || isPaywalled ? '#' : destinationUrl} onClick={finalOnClick} className={linkClassName}>
+                <div className="relative w-full h-80">
+                  <Image
+                    src={imageUrl}
+                    alt={modulo.nome}
+                    layout="fill"
+                    objectFit="cover"
+                    className={`transition-transform duration-500 group-hover:scale-110 ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
+                    onError={(e) => { e.currentTarget.src = '/img/fundo.png'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                 </div>
-              )}
-            </Link>
-          );
-        })}
+                <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
+                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
+                  <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
+                    {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
+                  </p>
+                </div>
+                {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
+                {(isLocked || isPaywalled) && (
+                  <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 text-center">
+                    <span className="font-bold text-amber-400">{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
+                    <span className="text-xs">{lockMessage}</span>
+                    {isPaywalled && (
+                      <button className="mt-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full hover:bg-amber-400">
+                        {isLoadingPix && productKeyToBuy === purchaseProductKey ? 'A gerar...' : 'Liberar Acesso'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
       </div>
 
       {/* 8. RENDERIZAÇÃO CORRETA DO MODAL */}
