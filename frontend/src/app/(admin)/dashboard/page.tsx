@@ -440,7 +440,7 @@ export default function DashboardPage() {
           // 7. LÓGICA DE BLOQUEIO ATUALIZADA com as chaves de produto
           if (indexPrincipal >= 6 && userPlan === 'basic') {
             isPaywalled = true;
-            lockMessage = "Faça upgrade para Premium para aceder";
+            lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
             purchaseProductKey = 'premium'; // Chave do Produto Premium
           }
 
@@ -515,10 +515,7 @@ export default function DashboardPage() {
             ${isPaywalled
               ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40'
               : isLocked
-                ? (isSpecialModule
-                  ? 'cursor-not-allowed contrast-75 brightness-75' // Bloqueado mas colorido (sem grayscale)
-                  : 'cursor-not-allowed filter grayscale contrast-75 brightness-75' // Bloqueado normal (cinza)
-                )
+                ? 'cursor-not-allowed' // Bloqueado: Cor original, apenas cursor indica bloqueio
                 : isCompleted
                   ? 'hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 opacity-90 hover:opacity-100 ring-2 ring-emerald-500/30'
                   : 'hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40' // Normal
@@ -540,14 +537,14 @@ export default function DashboardPage() {
               <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
                 <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
                 <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
-                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description} (v2)
+                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
                 </p>
               </div>
               {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
               {(isLocked || isPaywalled) && (
                 <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center p-4 text-center">
-                  <span className="font-bold text-amber-400">{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
-                  <span className="text-xs">{lockMessage}</span>
+                  <span className={`font-bold ${isPaywalled ? "text-amber-400" : "text-red-600"}`}>{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
+                  <span className={`text-xs ${!isPaywalled ? "text-red-500 font-medium" : ""}`}>{lockMessage}</span>
                   {isPaywalled && (
                     <button className="mt-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full hover:bg-amber-400">
                       {isLoadingPix && productKeyToBuy === purchaseProductKey ? 'A gerar...' : 'Liberar Acesso'}
