@@ -486,7 +486,7 @@ export default function DashboardPage() {
             lockMessage = "Acesso liberado após a Live";
           } else if (modulo.nome.toLowerCase().includes('carteira')) {
             destinationUrl = '/carteira'; imageUrl = '/img/ABRATH.png';
-            if (userPlan !== 'ultra' && !user?.hasWalletAccess) { // hasWalletAccess cobre Certificado e Carteira
+            if (userPlan !== 'ultra' && userPlan !== 'premium' && !user?.hasWalletAccess) { // Premium Acessa mas paga frete
               isPaywalled = true;
               lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'wallet'; // Chave do Produto Carteira
