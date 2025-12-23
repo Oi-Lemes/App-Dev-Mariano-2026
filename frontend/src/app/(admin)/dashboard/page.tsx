@@ -477,7 +477,7 @@ export default function DashboardPage() {
             destinationUrl = '/live'; imageUrl = '/img/md8.jpg';
             if (!user?.hasLiveAccess && userPlan !== 'ultra') {
               isPaywalled = true;
-              lockMessage = "Adquira seu acesso a este encontro exclusivo";
+              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'live'; // Chave do Produto Live
             }
           } else if (modulo.nome.toLowerCase().includes('whatsapp')) {
@@ -488,7 +488,7 @@ export default function DashboardPage() {
             destinationUrl = '/carteira'; imageUrl = '/img/ABRATH.png';
             if (userPlan !== 'ultra' && !user?.hasWalletAccess) { // hasWalletAccess cobre Certificado e Carteira
               isPaywalled = true;
-              lockMessage = "Exclusivo do plano Ultra ou compre agora";
+              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'wallet'; // Chave do Produto Carteira
             }
           }
