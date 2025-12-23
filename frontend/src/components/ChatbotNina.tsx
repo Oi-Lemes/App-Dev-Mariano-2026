@@ -69,6 +69,7 @@ export default function ChatbotNina() {
 
     // --- (Refs antigos de áudio raw removidos) ---
     const chatContainerRef = useRef<HTMLDivElement | null>(null);
+    const audioRef = useRef<HTMLAudioElement | null>(null); // REF PARA O PLAYER DE ÁUDIO (Mobile Fix)
 
     useEffect(() => {
         if (chatContainerRef.current) {
@@ -141,9 +142,16 @@ export default function ChatbotNina() {
     const playAudio = (text: string) => {
         try {
             const cleanText = removeMarkdown(text);
-            const audio = new Audio(`/api/tts?text=${encodeURIComponent(cleanText)}`);
+            const ttsUrl = `/api/tts?text=${encodeURIComponent(cleanText)}`;
+
+            // MOBILE FIX: Reutiliza a instância desbloqueada no clique
+            if (!audioRef.current) {
+                audioRef.current = new Audio();
+            }
+
+            audioRef.current.src = ttsUrl;
             // Promessa de play para capturar erros de autoplay em mobile
-            const playPromise = audio.play();
+            const playPromise = audioRef.current.play();
             if (playPromise !== undefined) {
                 playPromise.catch(error => {
                     console.warn("Autoplay bloqueado pelo navegador (comum em mobile). O usuário precisa interagir.", error);
@@ -178,6 +186,12 @@ export default function ChatbotNina() {
         setMessages(newMessages);
         setInput('');
         setIsLoading(true);
+
+        // MOBILE FIX: Desbloquear Áudio Imediatamente no Clique
+        if (!audioRef.current) audioRef.current = new Audio();
+        // Toca um silêncio curto para "abençoar" o elemento de áudio com o gesto do usuário
+        audioRef.current.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAGZGF0YQAAAAA=';
+        audioRef.current.play().catch((err) => console.log("Silent unlock failed (ok if desktop)", err));
 
         try {
             const token = localStorage.getItem('token');
