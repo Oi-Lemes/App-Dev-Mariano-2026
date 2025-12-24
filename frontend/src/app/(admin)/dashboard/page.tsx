@@ -470,7 +470,7 @@ export default function DashboardPage() {
               // Se passou no quiz mas não comprou -> Paywall do CERTIFICADO
               isPaywalled = true;
               isLockedByProgress = false;
-              lockMessage = "Adquira o certificado para emitir";
+              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'certificate'; // Chave correta para rota dedicada
             }
           } else if (modulo.nome.toLowerCase().includes('live')) {
@@ -496,7 +496,19 @@ export default function DashboardPage() {
           if (modulo.nome.toLowerCase().includes('quiz')) {
             destinationUrl = '/quiz';
             imageUrl = '/img/modulo_quiz.png';
-            isLockedByProgress = false; // DESBLOQUEIO TOTAL
+
+            // Lógica de Bloqueio do Quiz: Só libera se Módulo 6 estiver 100%
+            // O ID do Módulo 6 é... assumindo que seja o módulo de índice 5 no array principal (ids variam)
+            // Vamos buscar pelo ID 6 diretamente ou pelo sexto elemento.
+            // O usuário disse "concluir o módulo 6". O módulo 6 tem ID=6 no banco?
+            // Melhor buscar pelo ID 6 explicitamente.
+            const progressoModulo6 = progressoModulos[6] ?? 0;
+            if (progressoModulo6 < 100) {
+              isLockedByProgress = true;
+              lockMessage = "Conclua o Módulo 6 para liberar";
+            } else {
+              isLockedByProgress = false;
+            }
           }
 
           const isLocked = isLockedByProgress && !isPaywalled;
