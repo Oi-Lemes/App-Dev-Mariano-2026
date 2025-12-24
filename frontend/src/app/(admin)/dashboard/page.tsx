@@ -407,13 +407,21 @@ export default function DashboardPage() {
   // Adiciona módulos fixos se não existirem
   modulosFixos.forEach(mf => { if (!modulosParaExibir.some(m => m.id === mf.id)) modulosParaExibir.push(mf); });
 
+  // FORCE RENAME: Garante que o ID 98 tenha o nome novo, mesmo que venha do banco com o antigo
+  const modulosFinais = modulosParaExibir.map(m => {
+    if (m.id === 98) {
+      return { ...m, nome: 'Live com a Dra. Maria Silva', description: 'Um encontro exclusivo para tirar dúvidas.' };
+    }
+    return m;
+  });
+
   return (
     <section className="flex flex-col items-center w-full">
       <div className="text-center mb-10 md:mb-12 px-4 md:px-0">
         <TypewriterTitle text="Área de Membros" />
       </div>
       <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {modulosParaExibir.map((modulo) => {
+        {modulosFinais.map((modulo) => {
           // Encontrar o índice no array JÁ ORDENADO de principais
           const indexPrincipal = modulosPrincipais.findIndex(mp => mp.id === modulo.id);
           const userPlan = user?.plan || 'basic';
