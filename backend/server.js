@@ -1,6 +1,6 @@
 
 import 'dotenv/config';
-// Force Redeploy: 2025-12-30T22:35:00
+// Force Redeploy: 2025-12-30T22:55:00
 import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
@@ -541,6 +541,18 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
         const qrCode = transaction.qr_code || transaction.pix_qr_code || transaction.qrcode_text;
         const expiration = transaction.expires_at || transaction.expiration_date;
 
+        const qrCode = transaction.qr_code || transaction.pix_qr_code || transaction.qrcode_text;
+        const expiration = transaction.expires_at || transaction.expiration_date;
+
+        // SE SUCESSO mas SEM QR CODE (Compliance/Análise)
+        if (!qrCode && (data.status === 'success' || data.message?.includes('análise'))) {
+            return res.json({
+                pix: { pix_qr_code: null, expiration_date: null },
+                status: 'analysis',
+                message: data.message || 'Pagamento em análise de segurança. O PIX será enviado por e-mail.'
+            });
+        }
+
         if (!qrCode) {
             console.error('[PIX] Resposta sem QR Code:', JSON.stringify(data));
             return res.status(502).json({ error: 'Falha ao obter QR Code da operadora.' });
@@ -552,7 +564,8 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
                 expiration_date: expiration
             },
             amount_paid: baseAmount,
-            hash: transaction.id || transaction.hash || 'NOHASH'
+            hash: transaction.id || transaction.hash || 'NOHASH',
+            status: 'pending' // Default status
         });
 
     } catch (error) {
