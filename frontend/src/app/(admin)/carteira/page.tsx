@@ -217,6 +217,7 @@ export default function CarteiraPage() {
         {/* Modal PIX */}
         {isModalOpen && pixData && (
           <PixModal
+            isOpen={isModalOpen}
             pixData={pixData}
             onClose={() => setIsModalOpen(false)}
             onPaymentSuccess={handlePaymentSuccess}
@@ -312,6 +313,7 @@ export default function CarteiraPage() {
         {/* Modal PIX */}
         {isModalOpen && pixData && (
           <PixModal
+            isOpen={isModalOpen}
             pixData={pixData}
             onClose={() => setIsModalOpen(false)}
             onPaymentSuccess={handlePaymentSuccess}

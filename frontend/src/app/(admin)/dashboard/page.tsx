@@ -581,6 +581,7 @@ export default function DashboardPage() {
       {isLoadingPix && !isModalOpen && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"><p className="text-white text-lg">A gerar o seu PIX, aguarde...</p></div>}
       {isModalOpen && pixData && (
         <PixModal
+          isOpen={isModalOpen}
           pixData={pixData}
           onClose={() => setIsModalOpen(false)}
           onPaymentSuccess={handlePaymentSuccess} // Passando a função de callback
