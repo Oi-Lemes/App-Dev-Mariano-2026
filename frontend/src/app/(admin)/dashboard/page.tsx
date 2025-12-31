@@ -578,7 +578,8 @@ export default function DashboardPage() {
       </div>
 
       {/* 8. RENDERIZAÇÃO CORRETA DO MODAL */}
-      {isLoadingPix && !isModalOpen && <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]"><p className="text-white text-lg">A gerar o seu PIX, aguarde...</p></div>}
+      {/* 8. RENDERIZAÇÃO CORRETA DO MODAL */}
+      {/* Overlay de carregamento removido para usar o loading do botão/modal */}
       {isModalOpen && pixData && (
         <PixModal
           isOpen={isModalOpen}
