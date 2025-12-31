@@ -213,8 +213,8 @@ export default function CertificadoPage() {
     );
   }
 
-  // Se o usuário TEM acesso (Ultra OU já pagou a taxa) E o curso está concluído
-  if ((user?.hasWalletAccess || user?.plan === 'ultra') && cursoConcluido) {
+  // Se o usuário TEM acesso (Ultra OU já pagou a taxa) OR BYPASS ATIVO E o curso está concluído
+  if ((user?.hasWalletAccess || user?.plan === 'ultra' || IS_DEV_BYPASS) && cursoConcluido) {
     return (
       <section className="flex flex-col items-center w-full p-4 md:p-8">
         <div className="text-center mb-8">

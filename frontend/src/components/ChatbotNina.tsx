@@ -4,9 +4,12 @@ import ReactMarkdown from 'react-markdown';
 import { useUser } from '@/contexts/UserContext';
 import { PixModal } from '@/components/PixModal';
 
+import { IS_DEV_BYPASS } from '@/config/dev-bypass';
+
 // --- CONFIGURAÇÃO DE BASTIDORES ---
 // Mude para 'false' quando quiser ativar o pagamento novamente.
-const FREE_NINA_BETA = false;
+// SE O BYPASS ESTIVER TRUE, A NINA FICA GRATUITA (BETA = TRUE implied)
+const FREE_NINA_BETA = IS_DEV_BYPASS;
 
 // --- Interface PixData ---
 interface PixData {
