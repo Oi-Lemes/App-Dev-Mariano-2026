@@ -492,7 +492,7 @@ app.post('/webhook/paradise-reembolso', async (req, res) => {
 // --- ROTA DE GERAÇÃO DE PIX ---
 app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
     try {
-        const { productHash, baseAmount, productTitle, checkoutUrl, shipping } = req.body;
+        const { productHash, baseAmount, productTitle, checkoutUrl } = req.body;
         const userId = req.user.id;
         const user = await prisma.user.findUnique({ where: { id: userId } });
         if (!user) return res.status(404).json({ error: 'Usuário não encontrado.' });
@@ -515,21 +515,6 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
         };
         const defaultCpf = generateRandomCPF();
 
-        // FIX: Build Shipping Object or Use Dummy for "Physical" Wallet Product
-        // Gateway requires shipping for physical products. Using real address format to pass validation.
-        const shippingObj = shipping || {
-            name: user.name || 'Cliente ABRATH',
-            price: 0,
-            address: {
-                street: 'Av. Paulista',
-                street_number: '1000',
-                neighborhood: 'Bela Vista',
-                city: 'Sao Paulo',
-                state: 'SP',
-                zipcode: '01310100' // CEP Real da Paulista
-            }
-        };
-
         const paymentPayload = {
             amount: baseAmount,
             description: productTitle || 'Produto Digital',
@@ -542,7 +527,6 @@ app.post('/gerar-pix-paradise', authenticateToken, async (req, res) => {
                 document: generateRandomCPF(), // ALWAYS use random CPF to avoid Compliance/Fraud lock on Test Users
                 phone: (user.phone || '').replace(/\D/g, '')
             },
-            shipping: shippingObj, // Include shipping data
             orderbump: [] // Mantendo estrutura idêntica ao PHP
         };
 
