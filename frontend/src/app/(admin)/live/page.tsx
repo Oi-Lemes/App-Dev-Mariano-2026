@@ -197,6 +197,7 @@ export default function LivePage() {
       {/* Renderização do Modal */}
       {isModalOpen && pixData && (
         <PixModal
+          isOpen={isModalOpen}
           pixData={pixData}
           onClose={() => setIsModalOpen(false)}
           onPaymentSuccess={handlePaymentSuccess}
