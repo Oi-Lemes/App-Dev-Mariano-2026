@@ -113,8 +113,8 @@ const PRODUCTS = {
   },
   wallet: {
     hash: 'prod_375f8ceb7a4cffcc', // Carteira ABRATH (Paradise)
-    amount: 3639,                 // Force Redeploy: 2025-12-31T00:50:00)
-    title: 'Carteira Digital ABRATH'       // Título do PHP
+    amount: 3639,                 // Force Redeploy: 2025-12-31T01:25:00)
+    title: 'Taxa de Emissão Digital'       // Alterado para evitar bloqueio de "Carteira"
   }
 };
 

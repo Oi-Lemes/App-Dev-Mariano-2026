@@ -47,7 +47,11 @@ export function PixModal({ isOpen, onClose, onPaymentSuccess, pixData }: PixModa
 
       try {
         const token = localStorage.getItem('token');
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+        // FIX: Prioritize Env Var, fallback to production URL, NEVER localhost in prod
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL ||
+          process.env.NEXT_PUBLIC_BACKEND_URL ||
+          'https://backend-plants-image-latest.onrender.com';
+
         const url = `${apiUrl}/verificar-status-paradise/${pixData.hash}?_=${Date.now()}`;
 
         const response = await fetch(url, {
