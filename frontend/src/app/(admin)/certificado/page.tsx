@@ -178,8 +178,8 @@ export default function CertificadoPage() {
     );
   }
 
-  // Se o curso ESTÁ concluído, mas o usuário NÃO TEM acesso (não é Ultra e não comprou)
-  if (!user?.hasWalletAccess && user?.plan !== 'ultra' && cursoConcluido) {
+  // Se o curso ESTÁ concluído, mas o usuário NÃO TEM acesso (não é Ultra e não comprou) E SEM BYPASS
+  if (!user?.hasWalletAccess && user?.plan !== 'ultra' && cursoConcluido && !IS_DEV_BYPASS) {
     return (
       <section className="flex flex-col items-center justify-center h-full text-center p-6">
         <h1 className="text-4xl font-bold text-white mb-4">Parabéns pela Conclusão!</h1>

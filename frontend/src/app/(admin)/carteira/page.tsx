@@ -201,8 +201,8 @@ export default function CarteiraPage() {
     );
   }
 
-  // Caso 2: Usuário NÃO tem acesso E NÃO é Ultra E NÃO é Premium -> Precisa pagar a taxa primeiro
-  if (!user?.hasWalletAccess && user?.plan !== 'ultra' && user?.plan !== 'premium') {
+  // Caso 2: Usuário NÃO tem acesso E NÃO é Ultra E NÃO é Premium E NÃO TEM BYPASS -> Precisa pagar a taxa primeiro
+  if (!user?.hasWalletAccess && user?.plan !== 'ultra' && user?.plan !== 'premium' && !IS_DEV_BYPASS) {
     return (
       <section className="flex flex-col items-center w-full p-8 text-center">
         <h1 className="text-4xl font-bold text-white">Adquira a sua Carteira ABRATH</h1>
