@@ -403,7 +403,8 @@ export default function DashboardPage() {
     { id: 98, nome: 'Live com a Dra. Maria Silva', description: 'Um encontro exclusivo para tirar dúvidas.', aulas: [] },
     { id: 100, nome: 'Emissão de Certificado', description: 'Parabéns! Emita o seu certificado.', aulas: [] },
     { id: 101, nome: 'Emissão CARTEIRA NACIONAL CRTH ABRATH', description: 'Esta carteira tem sua emissão de forma anual.', aulas: [] },
-    { id: 102, nome: 'Quiz de Conhecimento', description: 'Teste seus conhecimentos e ganhe recompensas!', capa: '/img/modulo_quiz.png', aulas: [{ id: 999 }] }
+    { id: 102, nome: 'Quiz de Conhecimento', description: 'Teste seus conhecimentos e ganhe recompensas!', capa: '/img/modulo_quiz.png', aulas: [{ id: 999 }] },
+    { id: 103, nome: 'Grupo VIP WhatsApp', description: 'Networking e avisos importantes.', aulas: [] }
   ];
   // Adiciona módulos fixos se não existirem
   modulosFixos.forEach(mf => { if (!modulosParaExibir.some(m => m.id === mf.id)) modulosParaExibir.push(mf); });
@@ -491,6 +492,13 @@ export default function DashboardPage() {
             }
           } else if (modulo.nome.toLowerCase().includes('whatsapp')) {
             destinationUrl = '#'; imageUrl = '/img/md9.jpg';
+            // Lógica de Bloqueio do WhatsApp:
+            // "Liberado após a Live" -> Implica que depende do módulo da Live (98)?
+            // Ou o usuário quer que apareça mas bloqueado?
+            // "Só libera depois da Live" -> Vou deixar visualmente bloqueado dependendo da Live.
+            // Se a Live (98) foi concluída? Ou se o usuário tem acesso à Live?
+            // Vou assumir que depende do módulo anterior ou da Live.
+            // Para "recolocar", só garanto que renderiza.
             isLockedByProgress = true;
             lockMessage = "Acesso liberado após a Live";
           } else if (modulo.nome.toLowerCase().includes('carteira')) {

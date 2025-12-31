@@ -323,9 +323,14 @@ export default function ChatbotNina() {
         // Se estiver em modo BETA (Grátis) OU Usuário tiver plano superior/acesso
         // Abre o chat direto. Caso contrário, pede PIX.
 
-        const hasAccess = FREE_NINA_BETA || user?.plan !== 'basic';
+        // Lógica de Bloqueio:
+        // Se FREE_NINA_BETA is true -> Liberado
+        // Se user.plan == 'ultra' OR 'premium' -> Liberado
+        // Se user.hasNinaAccess -> Liberado
+        // Caso contrário -> Bloqueado (Manda pagar)
+        const canAccess = FREE_NINA_BETA || user?.plan === 'ultra' || user?.plan === 'premium' || user?.hasNinaAccess;
 
-        if (hasAccess) {
+        if (canAccess) {
             setIsOpen(prev => !prev);
         } else {
             handleUnlockClick();
