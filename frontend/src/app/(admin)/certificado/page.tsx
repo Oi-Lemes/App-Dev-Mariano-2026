@@ -219,8 +219,8 @@ export default function CertificadoPage() {
     return (
       <section className="flex flex-col items-center w-full p-4 md:p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">Emissão de Certificado</h1>
-          <p className="text-lg text-gray-300">Parabéns por concluir a Formação Herbalista Pro!</p>
+          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2">Emissão de Certificado {IS_DEV_BYPASS && <span className="text-red-500 text-sm">(DEV)</span>}</h1>
+          <p className="text-lg text-gray-300">Parabéns por concluir a Formação Herbalista Pro! (Bypass Ativo)</p>
         </div>
 
         <div className="w-full max-w-lg bg-gray-800 p-6 md:p-8 rounded-lg shadow-lg text-center">

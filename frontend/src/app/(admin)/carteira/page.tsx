@@ -167,11 +167,8 @@ export default function CarteiraPage() {
       return;
     }
 
-    // BYPASS LOGIC: Se estiver em modo DEV, pula o pagamento e vai direto pro sucesso
-    if (IS_DEV_BYPASS) {
-      setIsShippingSuccess(true);
-      return;
-    }
+    // BYPASS REMOVIDO: Frete deve ser pago mesmo em modo DEV
+    // if (IS_DEV_BYPASS) { setIsShippingSuccess(true); return; }
 
     const productKey = shippingMethod === 'pac' ? 'pac' : 'express';
     handleOpenPixModal(productKey);

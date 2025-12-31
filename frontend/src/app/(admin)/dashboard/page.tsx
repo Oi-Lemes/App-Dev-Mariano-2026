@@ -7,6 +7,7 @@ import Image from 'next/image';
 import { useUser } from '@/contexts/UserContext';
 import { PixModal } from '@/components/PixModal'; // Importado corretamente
 import { motion } from 'framer-motion';
+import { IS_DEV_BYPASS } from '@/config/dev-bypass';
 
 // --- COMPONENTE DE EFEITO DE ESCRITA (SVG CONTOUR + FILL) ---
 const TypewriterTitle = ({ text }: { text: string }) => {
@@ -446,7 +447,7 @@ export default function DashboardPage() {
           let imageUrl = (modulo as any).capa || (imageIndex > 0 ? `/img/md${imageIndex}.jpg` : '/img/fundo.png');
 
           // 7. LÓGICA DE BLOQUEIO ATUALIZADA com as chaves de produto
-          if (indexPrincipal >= 6 && userPlan === 'basic') {
+          if (indexPrincipal >= 6 && userPlan === 'basic' && !IS_DEV_BYPASS) {
             isPaywalled = true;
             lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
             purchaseProductKey = 'premium'; // Chave do Produto Premium
@@ -470,11 +471,11 @@ export default function DashboardPage() {
             const quizProgress = progressoModulos?.[102] ?? 0;
             const quizPassed = quizProgress >= 60; // Mínimo 60% de acerto
 
-            if (!quizPassed) {
+            if (!quizPassed && !IS_DEV_BYPASS) {
               isLockedByProgress = true;
               lockMessage = "Seja aprovado no Quiz (min. 60%) para liberar";
             }
-            else if (userPlan === 'basic' && !user?.hasWalletAccess) {
+            else if (userPlan === 'basic' && !user?.hasWalletAccess && !IS_DEV_BYPASS) {
               // Se passou no quiz mas não comprou -> Paywall do CERTIFICADO
               isPaywalled = true;
               isLockedByProgress = false;
@@ -483,7 +484,7 @@ export default function DashboardPage() {
             }
           } else if (modulo.nome.toLowerCase().includes('live')) {
             destinationUrl = '/live'; imageUrl = '/img/dra_maria.jpg';
-            if (!user?.hasLiveAccess && userPlan !== 'ultra') {
+            if (!user?.hasLiveAccess && userPlan !== 'ultra' && !IS_DEV_BYPASS) {
               isPaywalled = true;
               lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'live'; // Chave do Produto Live
@@ -494,7 +495,7 @@ export default function DashboardPage() {
             lockMessage = "Acesso liberado após a Live";
           } else if (modulo.nome.toLowerCase().includes('carteira')) {
             destinationUrl = '/carteira'; imageUrl = '/img/ABRATH.png';
-            if (userPlan !== 'ultra' && userPlan !== 'premium' && !user?.hasWalletAccess) { // Premium Acessa mas paga frete
+            if (userPlan !== 'ultra' && userPlan !== 'premium' && !user?.hasWalletAccess && !IS_DEV_BYPASS) { // Premium Acessa mas paga frete
               isPaywalled = true;
               lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
               purchaseProductKey = 'wallet'; // Chave do Produto Carteira

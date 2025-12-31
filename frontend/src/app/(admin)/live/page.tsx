@@ -127,7 +127,7 @@ export default function LivePage() {
     return (
       <section className="flex flex-col items-center w-full p-4 md:p-8">
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">Encontro Semanal</h1>
+          <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">Encontro Semanal {IS_DEV_BYPASS && <span className="text-red-500 text-sm">(MODO DEV ATIVO)</span>}</h1>
           <p className="text-xl text-amber-400 font-semibold mb-2">Próxima Live: {nextLiveDate}</p>
         </div>
 
