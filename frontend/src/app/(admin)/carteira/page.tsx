@@ -18,7 +18,7 @@ interface PixData {
 const PRODUCTS = {
   walletAccess: {
     hash: 'prod_375f8ceb7a4cffcc',
-    amount: 2700,
+    amount: 3639,
     title: 'Taxa de Emissão Digital ABRATH'
   },
   pac: {
