@@ -188,40 +188,22 @@ export default function AulaPage() {
 
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(secureDownloadPath, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
 
-      if (res.status === 403) {
-        const data = await res.json();
-        // Lança erro para ser pego e mostrado no modal
-        throw new Error(data.error || "Limite de download atingido.");
-      }
+      // IPHONE FIX: Usar navegação direta com Token na URL
+      // O fetch + blob é bloqueado frequentemente no iOS (assíncrono)
+      // O Backend foi atualizado para aceitar ?token=...
 
-      if (!res.ok) throw new Error("Erro ao iniciar download.");
+      const targetUrl = `${secureDownloadPath}${secureDownloadPath.includes('?') ? '&' : '?'}token=${token}`;
 
-      // Se sucesso (200), converte para Blob e baixa
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      // Pega nome do arquivo do header ou usa fallback
-      const contentDisposition = res.headers.get('Content-Disposition');
-      let filename = 'arquivo';
-      if (contentDisposition) {
-        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
-        if (filenameMatch && filenameMatch.length === 2) filename = filenameMatch[1];
-      }
-      link.setAttribute('download', filename);
-      document.body.appendChild(link);
-      link.click();
-      link.parentNode?.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // Se for mobile, melhor window.location
+      window.location.href = targetUrl;
 
-      if (!isConcluida) handleMarcarComoConcluida();
+      // Delay para marcar como concluída (já que perdemos o callback do fetch)
+      setTimeout(() => {
+        if (!isConcluida) handleMarcarComoConcluida();
+      }, 2000);
 
     } catch (err: any) {
-      // Usa o estado de erro global ou um específico para modal
       setError(err.message);
     }
   };

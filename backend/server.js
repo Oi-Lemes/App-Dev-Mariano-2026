@@ -225,10 +225,14 @@ app.use(cors({
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Servir imagens estáticas (DEPOIS DO CORS)
 
 // --- MIDDLEWARE DE AUTH ---
+// --- MIDDLEWARE DE AUTH ---
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    // Check Header OR Query Param (for direct downloads)
+    const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+
     if (!token) return res.sendStatus(401);
+
     jwt.verify(token, JWT_SECRET, (err, user) => {
         if (err) return res.sendStatus(403);
         req.user = user;
@@ -1175,6 +1179,8 @@ app.get('/secure-download/:aulaId', authenticateToken, async (req, res) => {
             // __dirname ex: .../backend
             // join: .../backend + uploads/papertoys/... (Remove slash inicial)
             const filePath = path.join(__dirname, aula.downloadUrl.replace(/^[\\\/]/, ''));
+            // FORÇAR DOWNLOAD NO IPHONE (Binary Stream vs Image)
+            res.setHeader('Content-Type', 'application/octet-stream');
             res.download(filePath, (err) => {
                 if (err) {
                     console.error("Erro no download:", err);
