@@ -1,0 +1,75 @@
+🔍 INICIANDO AUDITORIA COMPLETA DE INTEGRIDADE...
+📂 Total de Arquivos Escaneados: 460
+
+--- 1. BUSCA POR INTRUSOS (Arquivos Iguais em Pastas Diferentes) ---
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Cartoon_Network] kikoriki_pogoriki.png
+   - [Desenhos_Diversos] pogoriki.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Cartoon_Network] swat_kats_t_bone.png
+   - [Desenhos_Diversos] t-bone.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Chrono_Trigger] crono (1).png
+   - [Dragon_Ball] dragão_ball_38.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dandadan] momo.png
+   - [Pokemon] pokemon_4.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dandadan] okarun.png
+   - [Pokemon] pokemon_5.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dandadan] turbogranny.png
+   - [Pokemon] pokemon_8.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dark_Horse_Comics] hellboy-movie.png
+   - [Pokemon] pokemon_2.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Desenhos_Diversos] desenho_diversos_v17.png
+   - [Disney_Pixar] toy_story_woody.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Desenhos_Diversos] desenho_diversos_v18.png
+   - [Disney_Pixar] toy_story_buzz_lightyear.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Desenhos_Diversos] desenho_diverso_recuperado.png
+   - [Pokemon] pokemon_1.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dino_Rei] dino_rei_dr_z.png
+   - [Monstros] monstro_classico.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Dragon_Ball] dragão_ball_47.png
+   - [Naruto] gyuki_by_hollowkingking_d56qp4z-375w-2x.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Pokemon] pokemon_3.png
+   - [Zelda] zelda_link_toon.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Sonic] sonic_classico_pt1.png
+   - [Star_Wars] wader.png
+
+🔴 ALERTA DE INTRUSO DETECTADO (Mesma imagem em lugares diferentes):
+   - [Sonic] sonic_classico_pt2.png
+   - [Star_Wars] wader 2.png
+
+--- 2. ARQUIVOS COM NOMES GENÉRICOS (Limpeza Recomendada) ---
+
+📂 Pasta: Dragon_Ball
+   ⚠️  Arquivos Genéricos: dragão_ball_1.png, dragão_ball_10.png, dragão_ball_11.png, dragão_ball_12.png, dragão_ball_13.png, dragão_ball_14.png, dragão_ball_15.png, dragão_ball_16.png, dragão_ball_17.png, dragão_ball_18.png, dragão_ball_19.png, dragão_ball_2.png, dragão_ball_20.png, dragão_ball_21.png, dragão_ball_22.png, dragão_ball_23.png, dragão_ball_24.png, dragão_ball_25.png, dragão_ball_26.png, dragão_ball_27.png, dragão_ball_28.png, dragão_ball_29.png, dragão_ball_3.png, dragão_ball_30.png, dragão_ball_31.png, dragão_ball_32.png, dragão_ball_33.png, dragão_ball_34.png, dragão_ball_35.png, dragão_ball_36.png, dragão_ball_37.png, dragão_ball_38.png, dragão_ball_39.png, dragão_ball_4.png, dragão_ball_40.png, dragão_ball_41.png, dragão_ball_42.png, dragão_ball_43.png, dragão_ball_44.png, dragão_ball_45.png, dragão_ball_46.png, dragão_ball_47.png, dragão_ball_48.png, dragão_ball_5.png, dragão_ball_6.png, dragão_ball_7.png, dragão_ball_8.png, dragão_ball_9.png
+
+📂 Pasta: Naruto
+   ⚠️  Arquivos Genéricos: naruto_1.png, naruto_10.png, naruto_11.png, naruto_12.png, naruto_13.png, naruto_14.png, naruto_15.png, naruto_16.png, naruto_17.png, naruto_18.png, naruto_19.png, naruto_2.png, naruto_20.png, naruto_21.png, naruto_22.png, naruto_23.png, naruto_24.png, naruto_25.png, naruto_26.png, naruto_27.png, naruto_28.png, naruto_29.png, naruto_3.png, naruto_30.png, naruto_31.png, naruto_32.png, naruto_33.png, naruto_34.png, naruto_35.png, naruto_36.png, naruto_37.png, naruto_38.png, naruto_39.png, naruto_4.png, naruto_5.png, naruto_6.png, naruto_7.png, naruto_8.png, naruto_9.png
+
+📂 Pasta: Pokemon
+   ⚠️  Arquivos Genéricos: pokemon_1.png, pokemon_2.png, pokemon_3.png, pokemon_4.png, pokemon_5.png, pokemon_6.png, pokemon_7.png, pokemon_8.png
