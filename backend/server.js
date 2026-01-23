@@ -139,6 +139,41 @@ const uploadsPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 
+// --- ROTA DE DOWNLOAD FORÇADO ---
+app.get('/download/:category/:subfolder/:file', (req, res) => {
+    const { category, subfolder, file } = req.params;
+    const filePath = path.join(uploadsPath, category, subfolder, file);
+
+    // Segurança básica contra Path Traversal
+    if (!filePath.startsWith(uploadsPath)) {
+        return res.status(403).send('Acesso negado.');
+    }
+
+    if (fs.existsSync(filePath)) {
+        res.download(filePath, file); // Express helper para forçar download
+    } else {
+        res.status(404).send('Arquivo não encontrado.');
+    }
+});
+
+// Variante para estrutura mais profunda ou diferente se necessário
+app.get('/download/*', (req, res) => {
+    // Fallback genérico para pegar qualquer caminho dentro de uploads
+    const relativePath = req.params[0];
+    const filePath = path.join(uploadsPath, relativePath);
+
+    if (!filePath.startsWith(uploadsPath)) {
+        return res.status(403).send('Acesso negado.');
+    }
+
+    if (fs.existsSync(filePath)) {
+        const fileName = path.basename(filePath);
+        res.download(filePath, fileName);
+    } else {
+        res.status(404).send('Arquivo não encontrado.');
+    }
+});
+
 const allowedOrigins = [
     'https://www.saberesdafloresta.site',
     'http://localhost:3000',
@@ -634,7 +669,18 @@ app.post('/upload-profile-image', authenticateToken, upload.single('profileImage
     }
 });
 
-app.get('/modulos', authenticateToken, (req, res) => { res.json(MOCK_MODULOS); });
+app.get('/modulos', authenticateToken, async (req, res) => {
+    try {
+        const modulos = await prisma.modulo.findMany({
+            include: { aulas: { orderBy: { ordem: 'asc' } } },
+            orderBy: [{ ordem: 'asc' }, { id: 'asc' }]
+        });
+        res.json(modulos);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: 'Erro ao buscar módulos' });
+    }
+});
 
 app.get('/api/fix-quiz-db', async (req, res) => {
     try {
@@ -673,11 +719,18 @@ app.get('/api/fix-quiz-db', async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 });
-app.get('/modulos/:id', authenticateToken, (req, res) => {
+app.get('/modulos/:id', authenticateToken, async (req, res) => {
     const id = parseInt(req.params.id);
-    const modulo = MOCK_MODULOS.find(m => m.id === id);
-    if (!modulo) return res.status(404).json({ error: 'Módulo não encontrado.' });
-    res.json(modulo);
+    try {
+        const modulo = await prisma.modulo.findUnique({
+            where: { id },
+            include: { aulas: { orderBy: { ordem: 'asc' } } }
+        });
+        if (!modulo) return res.status(404).json({ error: 'Módulo não encontrado.' });
+        res.json(modulo);
+    } catch (e) {
+        res.status(500).json({ error: 'Erro ao buscar módulo' });
+    }
 });
 
 app.get('/progresso', authenticateToken, async (req, res) => {
@@ -724,8 +777,13 @@ app.get('/progresso-modulos', authenticateToken, async (req, res) => {
         select: { aulaId: true }
     });
     const concluidasSet = new Set(progressos.map(p => p.aulaId));
+
+    const modulos = await prisma.modulo.findMany({
+        include: { aulas: true }
+    });
+
     const resultado = {};
-    MOCK_MODULOS.forEach(mod => {
+    modulos.forEach(mod => {
         if (!mod.aulas || mod.aulas.length === 0) {
             resultado[mod.id] = 100;
         } else {
@@ -948,6 +1006,39 @@ app.post('/gerar-certificado', authenticateToken, async (req, res) => {
     }
 });
 
+// --- ROTA DE DEBUG: RENOMEAR ARQUIVO ---
+app.post('/debug/rename-file', authenticateToken, (req, res) => {
+    const { category, oldName, newName } = req.body;
+    if (!category || !oldName || !newName) return res.status(400).json({ error: 'Dados incompletos' });
+
+    const dirPath = path.join(uploadsPath, 'papertoys', 'Organizados', category);
+    const oldPath = path.join(dirPath, oldName);
+    const newPath = path.join(dirPath, newName);
+
+    if (!fs.existsSync(oldPath)) {
+        return res.status(404).json({ error: 'Arquivo original não encontrado' });
+    }
+
+    try {
+        fs.renameSync(oldPath, newPath);
+        res.json({ success: true, message: `Renomeado de ${oldName} para ${newName}` });
+    } catch (error) {
+        console.error('Erro ao renomear:', error);
+        res.status(500).json({ error: 'Erro ao renomear arquivo' });
+    }
+});
+
+// --- ROTA DE DEBUG: LISTAR ARQUIVOS DA PASTA ---
+app.get('/debug/list-files/:category', authenticateToken, (req, res) => {
+    const { category } = req.params;
+    const dirPath = path.join(uploadsPath, 'papertoys', 'Organizados', category);
+
+    if (!fs.existsSync(dirPath)) return res.json([]);
+
+    const files = fs.readdirSync(dirPath).filter(f => f.match(/\.(jpg|jpeg|png|webp|gif)$/i));
+    res.json(files);
+});
+
 // Seed DB
 app.get('/fix-content-db', async (req, res) => {
     try {
@@ -1012,6 +1103,79 @@ if (process.env.NODE_ENV === 'production' || process.env.RENDER_EXTERNAL_URL) {
         axios.get(`${SELF_URL}/health`).catch(err => console.error('Keep-Alive Error:', err.message));
     }, 14 * 60 * 1000); // 14 minutos
 }
+
+
+
+// --- SECURE DOWNLOAD ENDPOINT (7-DAY PROGRESSIVE LIMIT) ---
+app.get('/secure-download/:aulaId', authenticateToken, async (req, res) => {
+    const { aulaId } = req.params;
+    const userId = req.user.id;
+
+    try {
+        const user = await prisma.user.findUnique({ where: { id: userId } });
+        const aula = await prisma.aula.findUnique({ where: { id: parseInt(aulaId) } });
+
+        if (!aula) return res.status(404).send('Conteúdo não encontrado');
+        if (!aula.downloadUrl) return res.status(404).send('Download indisponível');
+
+        // 1. Calcular Limites
+        const totalFiles = await prisma.aula.count({ where: { isImage: true } });
+        // Garante pelo menos 1
+        const count = totalFiles || 1;
+        const dailyQuota = Math.ceil(count / 7);
+
+        const now = new Date();
+        // Fallback para createdAt se for null (usuários antigos)
+        const created = user.createdAt ? new Date(user.createdAt) : new Date();
+        const diffTime = Math.abs(now - created);
+        // Dias desde o cadastro (mínimo 1)
+        const diffDays = Math.max(1, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+
+        const maxDownloads = dailyQuota * diffDays;
+
+        // 2. Verificar Histórico
+        const history = user.downloadHistory || [];
+        const alreadyDownloaded = history.includes(aulaId);
+
+        if (!alreadyDownloaded) {
+            // Se for novo download, verifica limite
+            if (history.length >= maxDownloads) {
+                return res.status(403).json({
+                    error: 'Limite de segurança: O conteúdo é liberado gradualmente em 7 dias.',
+                    liberado: maxDownloads,
+                    baixado: history.length
+                });
+            }
+
+            // 3. Atualizar Histórico
+            await prisma.user.update({
+                where: { id: userId },
+                data: { downloadHistory: { push: aulaId } }
+            });
+        }
+
+        // 4. Servir Arquivo
+        if (aula.downloadUrl.startsWith('/uploads/')) {
+            // downloadUrl ex: /uploads/papertoys/...
+            // __dirname ex: .../backend
+            // join: .../backend + uploads/papertoys/... (Remove slash inicial)
+            const filePath = path.join(__dirname, aula.downloadUrl.replace(/^[\\\/]/, ''));
+            res.download(filePath, (err) => {
+                if (err) {
+                    console.error("Erro no download:", err);
+                    if (!res.headersSent) res.status(404).send("Arquivo não encontrado no servidor.");
+                }
+            });
+        } else {
+            // Link externo
+            res.redirect(aula.downloadUrl);
+        }
+
+    } catch (e) {
+        console.error("Secure Download Error:", e);
+        res.status(500).send('Erro interno no download.');
+    }
+});
 
 app.listen(PORT, () => {
     console.log(`\n🚀 SERVIDOR REAL (PRISMA) RODANDO NA PORTA ${PORT}`);

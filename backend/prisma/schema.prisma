@@ -25,6 +25,10 @@ model User {
   hasNinaAccess Boolean  @default(false)
   hasWalletAccess Boolean @default(false)
   profileImage    String? // URL da foto de perfil
+  
+  // --- SEGURANÇA DE DOWNLOADS ---
+  createdAt       DateTime @default(now())
+  downloadHistory String[] @default([]) // Lista de IDs de aulas baixadas (para travar abuso)
 
 
   // --- RELACIONAMENTOS ---
@@ -46,6 +50,8 @@ model Aula {
   nome       String
   descricao  String
   videoUrl   String
+  downloadUrl String? // Link para baixar o PDF/Imagem
+  isImage    Boolean @default(false) // Se true, o videoUrl age como preview de imagem
   ordem      Int
   moduloId   Int
   modulo     Modulo   @relation(fields: [moduloId], references: [id])

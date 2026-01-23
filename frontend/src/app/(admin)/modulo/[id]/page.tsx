@@ -72,7 +72,7 @@ export default function ModuloPage() {
         try {
           const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
           const progressoRes = await fetch(`${backendUrl}/progresso`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
-          if(progressoRes.ok) {
+          if (progressoRes.ok) {
             setAulasConcluidas(await progressoRes.json());
           }
         } catch (error) {
@@ -129,26 +129,21 @@ export default function ModuloPage() {
                 className="flex items-center justify-between p-4 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors"
               >
                 <div className="flex items-center">
-                  {/* Ícone de Play só aparece se a aula NÃO estiver concluída */}
-                  {!isConcluida && (
-                    <div className="w-8 h-8 flex items-center justify-center mr-4 text-gray-400">
-                      ▶
-                    </div>
-                  )}
+                  {/* Ícone de Play removido a pedido */}
                   {/* O nome da aula ganha o efeito de riscado se estiver concluída */}
                   <span className={`font-medium ${isConcluida ? 'line-through text-gray-500' : 'text-white'}`}>
                     {aula.nome}
                   </span>
                 </div>
                 <span className={`text-sm ${isConcluida ? 'text-green-400' : 'text-gray-400'}`}>
-                  {isConcluida ? 'Concluída' : 'Assistir'}
+                  {isConcluida ? 'Concluída' : 'Acessar'}
                 </span>
               </Link>
             );
           })}
         </div>
         {/* --- FIM DA CORREÇÃO VISUAL --- */}
-        
+
       </main>
     </div>
   );

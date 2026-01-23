@@ -1,6 +1,4 @@
 "use client";
-// Force Vercel Rebuild - Fix Duplication
-
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -10,6 +8,8 @@ interface Aula {
   id: number;
   nome: string;
   videoUrl?: string;
+  downloadUrl?: string;
+  isImage?: boolean; // Novo campo
 }
 interface Modulo {
   id: number;
@@ -17,7 +17,7 @@ interface Modulo {
   aulas: Aula[];
 }
 
-// --- MUDANÇA 1: Componente de Ícone para os botões ---
+// --- Componentes de Ícone ---
 const CheckIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
@@ -30,6 +30,11 @@ const ArrowRightIcon = () => (
   </svg>
 );
 
+const DownloadIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+    <path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" />
+  </svg>
+);
 
 export default function AulaPage() {
   const params = useParams();
@@ -41,7 +46,6 @@ export default function AulaPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
-  // Estado para desativar botões durante o delay do redirect com aviso
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   const fetchData = useCallback(async () => {
@@ -75,12 +79,6 @@ export default function AulaPage() {
   }, [moduleId, router]);
 
   useEffect(() => {
-    if (!document.querySelector('script[src="https://fast.wistia.net/player.js"]')) {
-      const script = document.createElement('script');
-      script.src = "https://fast.wistia.net/player.js";
-      script.async = true;
-      document.body.appendChild(script);
-    }
     fetchData();
   }, [moduleId, aulaId, fetchData]);
 
@@ -98,13 +96,7 @@ export default function AulaPage() {
   const aulaIndex = modulo?.aulas.findIndex(a => a.id.toString() === aulaId) ?? -1;
   const isUltimaAulaDoModulo = aulaIndex !== -1 && aulaIndex === (modulo?.aulas.length ?? 0) - 1;
   const isConcluida = aulaAtual ? aulasConcluidas.includes(aulaAtual.id) : false;
-
   const isModuloConcluido = modulo ? modulo.aulas.every(a => aulasConcluidas.includes(a.id)) : false;
-
-  // --- REMOVIDO: Lógica de redirect automático ao terminar módulo estava expulsando alunos ---
-  // useEffect(() => {
-  //   if (isUltimaAulaDoModulo && isModuloConcluido) { ... }
-  // }, ...);
 
   const handleMarcarComoConcluida = async () => {
     if (!aulaAtual) return;
@@ -112,7 +104,6 @@ export default function AulaPage() {
     const token = localStorage.getItem('token');
     if (!token) return;
 
-    // Lógica de Toggle: Se já está concluída, vamos desmarcar (enviar false).
     const novoStatus = !isConcluida;
 
     try {
@@ -126,14 +117,12 @@ export default function AulaPage() {
         body: JSON.stringify({ aulaId: aulaAtual.id, completed: novoStatus })
       });
 
-      // Atualiza estado local imediatamente para feedback visual rápido
       if (novoStatus) {
         setAulasConcluidas(prev => [...prev, aulaAtual.id]);
       } else {
         setAulasConcluidas(prev => prev.filter(id => id !== aulaAtual.id));
       }
 
-      // Força evento de storage para atualizar o Dashboard na mesma aba/outras abas
       const now = Date.now().toString();
       localStorage.setItem('aula_concluida', now);
       window.dispatchEvent(new Event('storage'));
@@ -157,10 +146,10 @@ export default function AulaPage() {
         const primeiraAulaNaoConcluida = modulo.aulas.find(a => !aulasConcluidas.includes(a.id));
         if (primeiraAulaNaoConcluida) {
           setFeedbackMessage(`Aguarde... você precisa concluir a aula "${primeiraAulaNaoConcluida.nome}".`);
-          setIsRedirecting(true); // Desativa os botões
+          setIsRedirecting(true);
           setTimeout(() => {
             router.push(`/modulo/${moduleId}/aula/${primeiraAulaNaoConcluida.id}`);
-          }, 3000); // Delay de 3 segundos
+          }, 3000);
         } else {
           router.push('/dashboard');
         }
@@ -169,6 +158,73 @@ export default function AulaPage() {
   };
 
   const isVideo = aulaAtual?.videoUrl?.includes('wistia') || aulaAtual?.videoUrl?.includes('youtube');
+
+  // Constrói URL completa se for local
+  const getFullUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
+  };
+
+  const previewUrl = getFullUrl(aulaAtual?.videoUrl ? encodeURI(aulaAtual.videoUrl) : '');
+
+  // Transform /uploads/... to /secure-download/... for progressive limit
+  let downloadUrl = getFullUrl(aulaAtual?.downloadUrl);
+  const secureDownloadPath = aulaAtual?.downloadUrl?.startsWith('/uploads/') || aulaAtual?.isImage
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/secure-download/${aulaAtual?.id}`
+    : downloadUrl;
+
+  const handleSecureDownload = async () => {
+    if (!aulaAtual) return;
+    setFeedbackMessage(null);
+    setError(null);
+
+    // Se for link externo, abre direto
+    if (!aulaAtual.downloadUrl?.startsWith('/uploads/') && !aulaAtual.isImage) {
+      window.open(downloadUrl, '_blank');
+      if (!isConcluida) handleMarcarComoConcluida();
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(secureDownloadPath, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (res.status === 403) {
+        const data = await res.json();
+        // Lança erro para ser pego e mostrado no modal
+        throw new Error(data.error || "Limite de download atingido.");
+      }
+
+      if (!res.ok) throw new Error("Erro ao iniciar download.");
+
+      // Se sucesso (200), converte para Blob e baixa
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      // Pega nome do arquivo do header ou usa fallback
+      const contentDisposition = res.headers.get('Content-Disposition');
+      let filename = 'arquivo';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?(.+)"?/);
+        if (filenameMatch && filenameMatch.length === 2) filename = filenameMatch[1];
+      }
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      window.URL.revokeObjectURL(url);
+
+      if (!isConcluida) handleMarcarComoConcluida();
+
+    } catch (err: any) {
+      // Usa o estado de erro global ou um específico para modal
+      setError(err.message);
+    }
+  };
 
   if (isLoading) {
     return <div className="flex justify-center items-center h-screen"><div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div></div>;
@@ -198,28 +254,53 @@ export default function AulaPage() {
       </header>
       <main className="space-y-6">
 
-        <div>
-          {aulaAtual.videoUrl ? (
-            isVideo ? (
-              <div className="w-full aspect-video bg-transparent">
-                <iframe
-                  src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
-                  title={aulaAtual.nome}
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  frameBorder="0"
-                  scrolling="no"
-                  className="w-full h-full"
-                ></iframe>
-              </div>
-            ) : (
-              <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
-            )
-          ) : (
-            <div className="flex items-center justify-center w-full aspect-video bg-gray-900">
-              <p className="text-gray-400">Conteúdo indisponível para esta aula.</p>
+        <div className="bg-gray-900 rounded-lg overflow-hidden shadow-2xl border border-gray-800">
+          {aulaAtual.isImage ? (
+            <div className="flex justify-center items-center p-4 bg-gray-800/50">
+              {/* Imagem do Paper Toy */}
+              <img
+                src={previewUrl}
+                alt={aulaAtual.nome}
+                className="max-h-[70vh] object-contain rounded-lg shadow-lg"
+              />
             </div>
+          ) : (
+            /* Lógica Antiga de Vídeo (Fallback) */
+            aulaAtual.videoUrl ? (
+              isVideo ? (
+                <div className="w-full aspect-video bg-transparent">
+                  <iframe
+                    src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
+                    title={aulaAtual.nome}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    frameBorder="0"
+                    scrolling="no"
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
+              ) : (
+                <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
+              )
+            ) : (
+              <div className="flex items-center justify-center w-full aspect-video bg-gray-900">
+                <p className="text-gray-400">Conteúdo indisponível para esta aula.</p>
+              </div>
+            )
           )}
         </div>
+
+        {/* --- Area de Download para Paper Toys --- */}
+        {aulaAtual.isImage && aulaAtual.downloadUrl && (
+          <div className="flex justify-center">
+            <button
+              onClick={handleSecureDownload}
+              className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
+            >
+              <DownloadIcon />
+              BAIXAR ARQUIVO (PDF/IMAGEM)
+            </button>
+          </div>
+        )}
 
         {isUltimaAulaDoModulo && isModuloConcluido && (
           <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center">
@@ -233,24 +314,14 @@ export default function AulaPage() {
           </div>
         )}
 
-        {/* --- MUDANÇA 3: Novo layout e estilo para os botões --- */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
-          <button
-            onClick={handleMarcarComoConcluida}
-            disabled={isRedirecting}
-            className={`w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:translate-y-0 disabled:shadow-none
-                    ${isConcluida ? 'bg-emerald-500 hover:bg-emerald-400 text-white shadow-emerald-500/30' : 'bg-gray-700 hover:bg-gray-600 text-gray-200'}
-                `}
-          >
-            {isConcluida && <CheckIcon />}
-            <span>{isConcluida ? 'Aula Concluída' : 'Marcar como Concluída'}</span>
-          </button>
+        {/* Botão Manual Removido para forçar progresso via Download */}
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
           <button
             onClick={handleProximo}
             disabled={isRedirecting}
             className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
           >
-            <span>{isUltimaAulaDoModulo ? 'Finalizar Módulo' : 'Próxima Aula'}</span>
+            <span>{isUltimaAulaDoModulo ? 'Finalizar Módulo' : 'Próxima'}</span>
             {!isUltimaAulaDoModulo && <ArrowRightIcon />}
           </button>
         </div>

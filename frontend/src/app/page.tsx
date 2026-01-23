@@ -145,7 +145,8 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login-phone`, {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+      const response = await fetch(`${backendUrl}/auth/login-phone`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone }),

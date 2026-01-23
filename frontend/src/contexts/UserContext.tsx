@@ -48,7 +48,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
       const response = await fetch(`${backendUrl}/me`, {
         headers: {
           'Authorization': `Bearer ${token}`

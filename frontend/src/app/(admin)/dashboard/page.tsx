@@ -10,11 +10,11 @@ import { motion } from 'framer-motion';
 import { IS_DEV_BYPASS } from '@/config/dev-bypass';
 
 // --- COMPONENTE DE EFEITO DE ESCRITA (SVG CONTOUR + FILL) ---
-const TypewriterTitle = ({ text }: { text: string }) => {
+const TypewriterTitle = ({ text, fontSize = '250px', viewBox = '0 0 1500 400', y = '70%', className = "p-4 mb-4" }: { text: string, fontSize?: string, viewBox?: string, y?: string, className?: string }) => {
   return (
-    <div className="relative flex justify-center items-center overflow-visible p-4 mb-4">
+    <div className={`relative flex justify-center items-center overflow-visible ${className}`}>
       <motion.svg
-        viewBox="0 0 1500 400" // Aumentado para fonte GIGANTE (250px)
+        viewBox={viewBox}
         className="w-full h-auto min-w-[300px] max-w-7xl"
         initial="hidden"
         animate="visible"
@@ -22,13 +22,13 @@ const TypewriterTitle = ({ text }: { text: string }) => {
       >
         <motion.text
           x="50%"
-          y="70%" // Centralização vertical calibrada para Pinyon Script
+          y={y} // Centralização vertical calibrada para Pinyon Script
           textAnchor="middle"
           dominantBaseline="middle"
-          stroke="#fff"
+          stroke="#FACC15" // Amarelo LEGO
           strokeWidth="3" // Traço mais grosso para acompanhar o tamanho
           strokeDasharray="6000"
-          fill="transparent"
+          fill="#FACC15" // Preenchimento Amarelo
           variants={{
             hidden: {
               strokeDashoffset: 6000,
@@ -40,15 +40,15 @@ const TypewriterTitle = ({ text }: { text: string }) => {
               strokeOpacity: 1,
               fillOpacity: 1,
               transition: {
-                strokeDashoffset: { duration: 3.5, ease: "easeInOut" },
+                strokeDashoffset: { duration: 6.0, ease: "easeInOut" },
                 strokeOpacity: { duration: 0.5 },
-                fillOpacity: { duration: 1.0, delay: 3.0, ease: "easeIn" }
+                fillOpacity: { duration: 2.0, delay: 5.5, ease: "easeIn" }
               }
             }
           }}
           style={{
-            fontFamily: 'var(--font-pinyon-script)',
-            fontSize: '250px', // Fonte MAXIMIZADA
+            fontFamily: 'var(--font-patrick-hand)',
+            fontSize: fontSize, // Fonte parametrizável
             filter: 'drop-shadow(0px 0px 12px rgba(0,0,0,0.9))' // Sombra intensa
           }}
           className="font-script tracking-wide"
@@ -134,7 +134,13 @@ const ProgressCircle = ({ percentage }: { percentage: number }) => {
     <div className="absolute top-4 right-4 z-10">
       <svg height={radius * 2} width={radius * 2} className="-rotate-90">
         <circle
-          stroke="#ffffff50"
+          r={normalizedRadius}
+          cx={radius}
+          cy={radius}
+          fill="rgba(0, 0, 0, 0.7)"
+        />
+        <circle
+          stroke="rgba(255, 255, 255, 0.1)"
           fill="transparent"
           strokeWidth={stroke}
           r={normalizedRadius}
@@ -157,8 +163,8 @@ const ProgressCircle = ({ percentage }: { percentage: number }) => {
           strokeLinecap="round" // Adicionado para melhor aparência
         />
       </svg>
-      <span className="absolute inset-0 flex items-center justify-center text-white font-bold text-xs">
-        {Math.round(percentage)}%
+      <span className="absolute inset-0 flex items-center justify-center text-purple-500 font-bold text-xs">
+        {percentage}%
       </span>
     </div>
   );
@@ -180,6 +186,9 @@ export default function DashboardPage() {
   const [isLoadingPix, setIsLoadingPix] = useState(false);
   const [paymentError, setPaymentError] = useState('');
   const [productKeyToBuy, setProductKeyToBuy] = useState<keyof typeof PRODUCTS | null>(null); // Guarda a *chave* do produto
+
+  // Lógica de Filtro de Pesquisa (Estado)
+  const [searchTerm, setSearchTerm] = useState('');
 
 
   const fetchData = useCallback(async () => {
@@ -370,221 +379,188 @@ export default function DashboardPage() {
     return (<div className="flex flex-col items-center justify-center h-full text-center text-red-400"><h2 className="text-2xl font-bold mb-4">Erro ao Carregar</h2><p>{errorMessage}</p><button onClick={fetchData} className="mt-6 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Tentar Novamente</button></div>);
   }
 
-  // ORDENAÇÃO ROBUSTA: Garantir que os módulos principais estejam em ordem (1, 2, 3...)
-  // HARDCODED ORDER to ensure frontend reflects changes immediately regardless of backend deployment
-  const FORCED_ORDER: { [key: number]: number } = {
-    1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6,
-    102: 7, // Quiz
-    100: 8, // Certificado
-    101: 9, // Carteira
-    98: 10  // Live
-  };
+  // ORDENAÇÃO ROBUSTA: Garantir que os módulos principais estejam em ordem
+  // Módulos do banco já vêm ordenados ou podemos ordenar pelo ID/Ordem
 
   const modulosPrincipais = Array.isArray(modulos)
-    ? modulos
-      .filter(m => m) // Removido filtro de ID 1-6 para permitir reordenar tudo aqui se necessário, mas mantendo a lógica original
-      .filter(m => m.id <= 6 || FORCED_ORDER[m.id]) // Garante que só processamos os conhecidos
-      .sort((a, b) => {
-        const orderA = FORCED_ORDER[a.id] || 999;
-        const orderB = FORCED_ORDER[b.id] || 999;
-        return orderA - orderB;
-      })
+    ? modulos.sort((a, b) => (a.ordem || a.id) - (b.ordem || b.id))
     : [];
 
-  // Recalcular totais apenas para os vídeos (ID <= 6)
-  const modulosVideos = modulosPrincipais.filter(m => m.id <= 6);
-  const totalAulasPrincipais = modulosVideos.reduce((acc, m) => acc + (m.aulas?.length || 0), 0);
-  const aulasPrincipais = modulosVideos.flatMap((m: any) => m.aulas || []);
+  const totalAulasPrincipais = modulosPrincipais.reduce((acc, m) => acc + (m.aulas?.length || 0), 0);
+  const aulasPrincipais = modulosPrincipais.flatMap((m: any) => m.aulas || []);
   const totalConcluidasPrincipais = aulasPrincipais.filter((a: any) => aulasConcluidasIds.includes(a.id)).length;
   const cursoConcluido = totalAulasPrincipais > 0 && totalConcluidasPrincipais >= totalAulasPrincipais;
 
-  const modulosParaExibir = [...modulosPrincipais];
-  const modulosFixos = [
-    { id: 98, nome: 'Live com a Dra. Maria Silva', description: 'Um encontro exclusivo para tirar dúvidas.', aulas: [] },
-    { id: 100, nome: 'Emissão de Certificado', description: 'Parabéns! Emita o seu certificado.', aulas: [] },
-    { id: 101, nome: 'Emissão CARTEIRA NACIONAL CRTH ABRATH', description: 'Esta carteira tem sua emissão de forma anual.', aulas: [] },
-    { id: 102, nome: 'Quiz de Conhecimento', description: 'Teste seus conhecimentos e ganhe recompensas!', capa: '/img/modulo_quiz.png', aulas: [{ id: 999 }] },
-    { id: 103, nome: 'Grupo VIP WhatsApp', description: 'Networking e avisos importantes.', aulas: [] }
-  ];
-  // Adiciona módulos fixos se não existirem
-  modulosFixos.forEach(mf => { if (!modulosParaExibir.some(m => m.id === mf.id)) modulosParaExibir.push(mf); });
+  // Lógica de Filtro de Pesquisa
+  // State movido para o topo
 
-  // FORCE RENAME: Garante que o ID 98 tenha o nome novo, mesmo que venha do banco com o antigo
-  const modulosFinais = modulosParaExibir.map(m => {
-    if (m.id === 98) {
-      return { ...m, nome: 'Live com a Dra. Maria Silva', description: 'Um encontro exclusivo para tirar dúvidas.' };
-    }
-    return m;
+  const modulosFinais = modulosPrincipais.filter(modulo => {
+    if (!searchTerm) return true;
+    const term = searchTerm.toLowerCase();
+    const nomeModuloMatch = modulo.nome.toLowerCase().includes(term);
+    const aulasMatch = modulo.aulas?.some((aula: any) => aula.nome.toLowerCase().includes(term));
+    return nomeModuloMatch || aulasMatch;
   });
+
 
   return (
     <section className="flex flex-col items-center w-full">
-      <div className="text-center mb-10 md:mb-12 px-4 md:px-0">
-        <TypewriterTitle text="Área de Membros" />
+      <div className="relative w-full max-w-5xl mx-auto mb-10 rounded-3xl overflow-hidden shadow-2xl border border-white/10 group">
+
+        {/* Background Image Layer */}
+        <div className="absolute inset-0 z-0">
+          <Image
+            src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWY0OGQ5aG04cGc0ODU3ZTRzdmlmdXZkazE4ZWZjM3F1ZWE3Z2x6MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mWnu8pS2MDcbRJ7YJ0/giphy.gif"
+            alt="Lego Background GIF"
+            fill
+            className="object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105"
+            priority
+          />
+          {/* Overlays para Contraste e Blend Natural */}
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-gray-900/90"></div>
+        </div>
+
+        {/* Conteúdo (Z-Index Elevado) */}
+        <div className="relative z-10 flex flex-col items-center py-10 md:py-14 px-4">
+
+          {/* Títulos */}
+          <div className="flex flex-col items-center justify-center -space-y-6 md:-space-y-12 mb-8 w-full">
+            <div className="w-[80%] md:w-[60%]">
+              <TypewriterTitle text="Bem vindo ao" fontSize="140px" viewBox="0 0 1500 300" y="80%" className="p-0 m-0 drop-shadow-2xl" />
+            </div>
+            <div className="w-full">
+              <TypewriterTitle text="Pappertoys" fontSize="250px" viewBox="0 0 1500 400" y="70%" className="p-0 m-0 drop-shadow-2xl" />
+            </div>
+          </div>
+
+          {/* Barra de Pesquisa */}
+          <div className="relative w-full max-w-xl mx-auto mt-4 group">
+            <input
+              type="text"
+              placeholder="Digite o nome do personagem (ex: Batman)..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-6 pr-16 py-4 bg-gray-900/80 backdrop-blur-md border-2 border-white/20 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all shadow-xl text-lg"
+            />
+            {/* Botão de Lupa (Decorativo ou Funcional) */}
+            <div className="absolute right-2 top-1/2 transform -translate-y-1/2">
+              <div className="p-3 bg-yellow-400 rounded-full shadow-lg shadow-yellow-400/20 animate-pulse-slow">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-black" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </div>
-      <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-        {modulosFinais.map((modulo) => {
-          // Encontrar o índice no array JÁ ORDENADO de principais
-          const indexPrincipal = modulosPrincipais.findIndex(mp => mp.id === modulo.id);
-          const userPlan = user?.plan || 'basic';
 
-          // Lógica de Bloqueio Linear:
-          // Se for o primeiro (index 0), nunca bloqueia.
-          // Se for > 0, verifica se o IMEDIATAMENTE ANTERIOR (index - 1) está 100%
-          const progressoAnterior = indexPrincipal > 0 ? (progressoModulos[modulosPrincipais[indexPrincipal - 1].id] ?? 0) : 100;
-          let isLockedByProgress = indexPrincipal > 0 && progressoAnterior < 100;
+      {modulosFinais.length === 0 ? (
+        <div className="text-center text-gray-400 mt-12">
+          <p className="text-xl">Nenhum módulo encontrado para "{searchTerm}"</p>
+        </div>
+      ) : (
+        <div className="w-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+          {modulosFinais.map((modulo) => {
+            // Encontrar o índice no array JÁ ORDENADO de principais
+            const indexPrincipal = modulosPrincipais.findIndex(mp => mp.id === modulo.id);
+            const userPlan = user?.plan || 'basic';
 
-          // Estado de Conclusão do Próprio Módulo
-          const progressPercentage = progressoModulos[modulo.id] ?? 0;
-          const isCompleted = progressPercentage >= 100;
+            // Lógica de Bloqueio Linear: DESATIVADA - TODOS LIBERADOS
+            // const progressoAnterior = indexPrincipal > 0 ? (progressoModulos[modulosPrincipais[indexPrincipal - 1].id] ?? 0) : 100;
+            // let isLockedByProgress = indexPrincipal > 0 && progressoAnterior < 100;
+            const isLockedByProgress = false; // FORÇADO: TODOS LIBERADOS
 
-          let isPaywalled = false;
-          let lockMessage = "Conclua o módulo anterior";
-          let purchaseProductKey: keyof typeof PRODUCTS | null = null; // Usar a chave do produto
+            // Estado de Conclusão do Próprio Módulo
+            const progressPercentage = progressoModulos[modulo.id] ?? 0;
+            const isCompleted = progressPercentage >= 100;
 
-          let destinationUrl = `/modulo/${modulo.id}`;
-          let imageIndex = modulo.ordem || (modulos.findIndex(m => m.id === modulo.id) + 1); // Usa ordem se disponível
-          // PRIORIDADE: Se o backend mandou 'capa', usa ela. Senão, usa a lógica antiga (md1, md2...)
-          let imageUrl = (modulo as any).capa || (imageIndex > 0 ? `/img/md${imageIndex}.jpg` : '/img/fundo.png');
+            // Lógica de Paywall: DESATIVADA - TODOS LIBERADOS
+            let isPaywalled = false;
+            let lockMessage = "";
+            let purchaseProductKey: keyof typeof PRODUCTS | null = null;
 
-          // 7. LÓGICA DE BLOQUEIO ATUALIZADA com as chaves de produto
-          if (indexPrincipal >= 6 && userPlan === 'basic' && !IS_DEV_BYPASS) {
-            isPaywalled = true;
-            lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
-            purchaseProductKey = 'premium'; // Chave do Produto Premium
-          }
+            let destinationUrl = `/modulo/${modulo.id}`;
+            // Lógica de Imagem (Backend vs Placeholder)
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+            let imageUrl = '/img/fundo.png';
 
-          // OVERRIDE: Garante a imagem do Quiz (102) e DESBLOQUEIO (Prioridade Alta)
-          if (modulo.id === 102) {
-            imageUrl = '/img/modulo_quiz.png';
-            isPaywalled = false;
-            purchaseProductKey = null; // Remove a chave de compra para não gerar PIX
-            lockMessage = "";
-          }
-          if (modulo.nome.toLowerCase().includes('certificado')) {
-            // FIX CRITICO: Reseta herança de "Premium" do index >= 6
-            isPaywalled = false;
-            purchaseProductKey = null;
-
-            destinationUrl = '/certificado'; imageUrl = '/img/md7.jpg';
-
-            // Lógica de bloqueio do Certificado: Depende do Quiz (Modulo 102)
-            const quizProgress = progressoModulos?.[102] ?? 0;
-            const quizPassed = quizProgress >= 60; // Mínimo 60% de acerto
-
-            if (!quizPassed && !IS_DEV_BYPASS) {
-              isLockedByProgress = true;
-              lockMessage = "Seja aprovado no Quiz (min. 60%) para liberar";
-            }
-            else if (userPlan === 'basic' && !user?.hasWalletAccess && !IS_DEV_BYPASS) {
-              // Se passou no quiz mas não comprou -> Paywall do CERTIFICADO
-              isPaywalled = true;
-              isLockedByProgress = false;
-              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
-              purchaseProductKey = 'certificate'; // Chave correta para rota dedicada
-            }
-          } else if (modulo.nome.toLowerCase().includes('live')) {
-            destinationUrl = '/live'; imageUrl = '/img/dra_maria.jpg';
-            if (!user?.hasLiveAccess && userPlan !== 'ultra' && !IS_DEV_BYPASS) {
-              isPaywalled = true;
-              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
-              purchaseProductKey = 'live'; // Chave do Produto Live
-            }
-          } else if (modulo.nome.toLowerCase().includes('whatsapp')) {
-            destinationUrl = '#'; imageUrl = '/img/md9.jpg';
-            // Lógica de Bloqueio do WhatsApp:
-            // "Liberado após a Live" -> Implica que depende do módulo da Live (98)?
-            // Ou o usuário quer que apareça mas bloqueado?
-            // "Só libera depois da Live" -> Vou deixar visualmente bloqueado dependendo da Live.
-            // Se a Live (98) foi concluída? Ou se o usuário tem acesso à Live?
-            // Vou assumir que depende do módulo anterior ou da Live.
-            // Para "recolocar", só garanto que renderiza.
-            isLockedByProgress = true;
-            lockMessage = "Acesso liberado após a Live";
-          } else if (modulo.nome.toLowerCase().includes('carteira')) {
-            destinationUrl = '/carteira'; imageUrl = '/img/ABRATH.png';
-            if (userPlan !== 'ultra' && userPlan !== 'premium' && !user?.hasWalletAccess && !IS_DEV_BYPASS) { // Premium Acessa mas paga frete
-              isPaywalled = true;
-              lockMessage = "Acesso destinado ao plano Premium ou pode comprar avulsamente";
-              purchaseProductKey = 'wallet'; // Chave do Produto Carteira
-            }
-          }
-
-          if (modulo.nome.toLowerCase().includes('quiz')) {
-            destinationUrl = '/quiz';
-            imageUrl = '/img/modulo_quiz.png';
-
-            // Lógica de Bloqueio do Quiz: Só libera se Módulo 6 estiver 100%
-            // O ID do Módulo 6 é... assumindo que seja o módulo de índice 5 no array principal (ids variam)
-            // Vamos buscar pelo ID 6 diretamente ou pelo sexto elemento.
-            // O usuário disse "concluir o módulo 6". O módulo 6 tem ID=6 no banco?
-            // Melhor buscar pelo ID 6 explicitamente.
-            const progressoModulo6 = progressoModulos[6] ?? 0;
-            if (progressoModulo6 < 100) {
-              isLockedByProgress = true;
-              lockMessage = "Conclua o Módulo 6 para liberar";
+            if (modulo.imagem) {
+              if (modulo.imagem.startsWith('/uploads')) {
+                imageUrl = `${backendUrl}${modulo.imagem}`;
+              } else {
+                imageUrl = modulo.imagem; // Caminho local (/img/...)
+              }
+            } else if ((modulo as any).capa) {
+              imageUrl = (modulo as any).capa;
             } else {
-              isLockedByProgress = false;
+              // Fallback para imagens estáticas antigas (apenas se não tiver imagem no banco)
+              let imageIndex = modulo.ordem || (modulos.findIndex(m => m.id === modulo.id) + 1);
+              if (imageIndex > 0 && imageIndex <= 40) imageUrl = `/img/md${imageIndex}.jpg`;
             }
-          }
 
-          const isLocked = isLockedByProgress && !isPaywalled;
-          const finalOnClick = isPaywalled && purchaseProductKey ? (e: React.MouseEvent) => { e.preventDefault(); handleOpenPixModal(purchaseProductKey!); } : undefined;
+            // Override Quiz
+            if (modulo.id === 102) imageUrl = '/img/modulo_quiz.png';
+            if (modulo.nome.toLowerCase().includes('certificado')) imageUrl = '/img/md7.jpg';
+            if (modulo.nome.toLowerCase().includes('live')) imageUrl = '/img/dra_maria.jpg';
+            if (modulo.nome.toLowerCase().includes('carteira')) imageUrl = '/img/ABRATH.png';
 
-          // Classes Dinâmicas:
-          // - Se bloqueado/paywall: grayscale alto, sem cursor
-          // - Se concluído: grayscale leve (visual "terminado"), mas ainda clicável e brilhante
-          // - Se normal: hover scale e shadow
-          // Lógica Especial: Módulos Pagos/Extras (ID >= 90) nunca ficam cinza, para chamar atenção
-          const isSpecialModule = modulo.id >= 90;
 
-          const shouldApplyGrayscale = isCompleted && modulo.id <= 6;
+            if (modulo.nome.toLowerCase().includes('carteira')) imageUrl = '/img/ABRATH.png';
 
-          const linkClassName = `group relative block rounded-lg overflow-hidden transition-all duration-500 transform 
+
+            const isLocked = false; // FORÇADO: TODOS LIBERADOS
+            const finalOnClick = undefined;
+
+            // Classes Dinâmicas:
+            const isSpecialModule = modulo.id >= 90;
+            const shouldApplyGrayscale = isCompleted && modulo.id <= 6;
+
+            const linkClassName = `group relative block rounded-lg overflow-hidden transition-all duration-500 transform 
             ${isPaywalled
-              ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40'
-              : isLocked
-                ? 'cursor-not-allowed' // Bloqueado: Cor original, apenas cursor indica bloqueio
-                : isCompleted
-                  ? 'hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 opacity-90 hover:opacity-100 ring-2 ring-emerald-500/30'
-                  : 'hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40' // Normal
-            }`;
+                ? 'cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40'
+                : isLocked
+                  ? 'cursor-not-allowed' // Bloqueado: Cor original, apenas cursor indica bloqueio
+                  : isCompleted
+                    ? 'hover:scale-105 hover:shadow-xl hover:shadow-emerald-500/20 opacity-90 hover:opacity-100 ring-2 ring-emerald-500/30'
+                    : 'hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/40' // Normal
+              }`;
 
-          return (
-            <Link key={modulo.id} href={isLocked || isPaywalled ? '#' : destinationUrl} onClick={finalOnClick} className={linkClassName}>
-              <div className="relative w-full h-80">
-                <Image
-                  src={imageUrl}
-                  alt={modulo.nome}
-                  layout="fill"
-                  objectFit="cover"
-                  className={`transition-transform duration-500 group-hover:scale-110 ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
-                  onError={(e) => { e.currentTarget.src = '/img/fundo.png'; }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
-              </div>
-              <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
-                <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
-                <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
-                  {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
-                </p>
-              </div>
-              {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
-              {(isLocked || isPaywalled) && (
-                <div className={`absolute inset-0 flex flex-col items-center justify-center p-4 text-center ${isPaywalled ? 'bg-black/80' : 'bg-black/50'}`}>
-                  <span className={`font-bold ${isPaywalled ? "text-amber-400" : "text-red-600"}`}>{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
-                  <span className={`text-xs ${!isPaywalled ? "text-red-500 font-medium" : ""}`}>{lockMessage}</span>
-                  {isPaywalled && (
-                    <button className="mt-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full hover:bg-amber-400">
-                      {isLoadingPix && productKeyToBuy === purchaseProductKey ? 'A gerar...' : 'Liberar Acesso'}
-                    </button>
-                  )}
+            return (
+              <Link key={modulo.id} href={isLocked || isPaywalled ? '#' : destinationUrl} onClick={finalOnClick} className={linkClassName}>
+                <div className="relative w-full h-80">
+                  <img
+                    src={imageUrl}
+                    alt={modulo.nome}
+                    className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
+                    onError={(e) => { e.currentTarget.src = '/img/fundo.png'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>
                 </div>
-              )}
-            </Link>
-          );
-        })}
-      </div>
+                <div className="absolute bottom-0 left-0 p-4 md:p-6 text-white w-full">
+                  <h3 className="text-xl md:text-2xl font-bold uppercase tracking-wider">{modulo.nome}</h3>
+                  <p className={`${modulo.nome.toLowerCase().includes('certificado') ? 'text-amber-300' : 'text-gray-300'} text-sm mt-1`}>
+                    {modulo.nome.toLowerCase().includes('certificado') && '🏆 '} {modulo.description}
+                  </p>
+                </div>
+                {(!isLocked && !isPaywalled && modulo.aulas && modulo.aulas.length > 0) && <ProgressCircle percentage={progressoModulos[modulo.id] ?? 0} />}
+                {(isLocked || isPaywalled) && (
+                  <div className={`absolute inset-0 flex flex-col items-center justify-center p-4 text-center ${isPaywalled ? 'bg-black/80' : 'bg-black/50'}`}>
+                    <span className={`font-bold ${isPaywalled ? "text-amber-400" : "text-red-600"}`}>{isPaywalled ? "CONTEÚDO EXCLUSIVO" : "BLOQUEADO"}</span>
+                    <span className={`text-xs ${!isPaywalled ? "text-red-500 font-medium" : ""}`}>{lockMessage}</span>
+                    {isPaywalled && (
+                      <button className="mt-2 px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full hover:bg-amber-400">
+                        {isLoadingPix && productKeyToBuy === purchaseProductKey ? 'A gerar...' : 'Liberar Acesso'}
+                      </button>
+                    )}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+        </div>
+      )}
 
       {/* 8. RENDERIZAÇÃO CORRETA DO MODAL */}
       {/* 8. RENDERIZAÇÃO CORRETA DO MODAL */}
