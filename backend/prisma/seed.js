@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const prisma = new PrismaClient();
 
 async function main() {
-    console.log("🚀 Iniciando Seed Mestre REVISADO: Priorizando Capas dos Personagens...");
+    console.log("🚀 Iniciando Seed Mestre FINAL: Capa Personalizada do Bônus...");
 
     // --- 1. LIMPEZA ---
     console.log("🧹 Limpando banco de dados...");
@@ -109,12 +109,14 @@ async function main() {
         const bonusFiles = fs.readdirSync(bonusDir).filter(f => f.match(/\.(png|jpg|jpeg)$/i));
 
         if (bonusFiles.length > 0) {
-            // Tenta achar Homem Aranha ou Batman para capa, senão pega o primeiro
-            let bonusCover = bonusFiles[0];
-            const heroPriority = ['aranha', 'spider', 'batman', 'iron', 'ferro'];
-            for (const p of heroPriority) {
-                const found = bonusFiles.find(f => f.toLowerCase().includes(p));
-                if (found) { bonusCover = found; break; }
+            // USA EXATAMENTE A CAPA OFICIAL QUE O USUÁRIO ENVIOU
+            // Se ela não existir por algum motivo, fallback para o primeiro arquivo
+            let bonusCover = `/uploads/quebra-cabeca/capa-oficial.jpg`;
+            const hasOfficialCover = bonusFiles.some(f => f === 'capa-oficial.jpg');
+
+            if (!hasOfficialCover) {
+                console.log("⚠️ Capa oficial não encontrada nos arquivos listados, usando fallback.");
+                bonusCover = `/uploads/quebra-cabeca/${bonusFiles[0]}`;
             }
 
             const bonusModulo = await prisma.modulo.create({
@@ -122,13 +124,16 @@ async function main() {
                     nome: "🎁 Bônus – Quebra Cabeça LEGO Heróis",
                     description: "Divirta-se montando quebra-cabeças incríveis!",
                     ordem: 900, // Ordem alta para ficar no final
-                    imagem: `/uploads/quebra-cabeca/${bonusCover}`
+                    imagem: bonusCover
                 }
             });
             console.log(`🎁 Módulo Bônus Criado: ${bonusModulo.nome} -> Capa: ${bonusCover}`);
 
             let bonusOrder = 1;
             for (const file of bonusFiles) {
+                // Não criar aula para a capa em si, apenas as outras imagens
+                if (file === 'capa-oficial.jpg') continue;
+
                 const aulaName = file.replace(/\.(png|jpg|jpeg)/i, '').replace(/_/g, ' ');
                 const fileUrl = `/uploads/quebra-cabeca/${file}`;
 
@@ -147,16 +152,7 @@ async function main() {
         }
     }
 
-    // --- 4. CERTIFICADO ---
-    await prisma.modulo.create({
-        data: {
-            nome: 'EMISSÃO DO CERTIFICADO',
-            description: 'Parabéns! Conclua o curso para emitir seu certificado.',
-            ordem: 9999, // Bem no final
-            imagem: '/img/certificate-cover.jpg'
-        },
-    });
-    console.log('🏆 Módulo Certificado Criado (Fim da Lista).');
+    // DIPLOMA REMOVIDO TOTALMENTE
 
     console.log("✨ Seed Mestre Concluído!");
 }
