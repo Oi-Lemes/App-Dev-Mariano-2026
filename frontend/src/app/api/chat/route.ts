@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
         // 2. Verifica se houve chamada de ferramenta
         if (responseMessage.tool_calls) {
-            const toolCall = responseMessage.tool_calls[0];
+            const toolCall = responseMessage.tool_calls[0] as any;
             if (toolCall && toolCall.function && toolCall.function.name === 'generate_image') {
                 const args = JSON.parse(toolCall.function.arguments);
 
