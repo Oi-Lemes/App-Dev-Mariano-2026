@@ -20,6 +20,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const execFileAsync = promisify(execFile);
 
+// --- KEEP ALIVE MECHANISM (PREVENT RENDER SLEEP) ---
+// Pings itself every 13 minutes (User Request)
+const KEEP_ALIVE_INTERVAL = 13 * 60 * 1000; // 13 minutes
+const SELF_URL = process.env.RENDER_EXTERNAL_URL || 'https://moldes.onrender.com';
+
+function keepAlive() {
+    console.log(`⏰ Keep-Alive Ping para: ${SELF_URL}`);
+    axios.get(SELF_URL)
+        .then(() => console.log('✅ Keep-Alive: Sucesso (Servidor Acordado)'))
+        .catch(err => console.error(`⚠️ Keep-Alive: Falha (${err.message}) - Mas a tentativa conta como atividade.`));
+}
+
+setInterval(keepAlive, KEEP_ALIVE_INTERVAL);
+// First ping after 1 min (to let server start)
+setTimeout(keepAlive, 60000);
 // --- CONFIGURAÇÃO DE UPLOAD (MULTER - MEMÓRIA) ---
 // Usamos memória para transformar em Base64 e salvar no banco (Persistência no Render)
 const storage = multer.memoryStorage();
