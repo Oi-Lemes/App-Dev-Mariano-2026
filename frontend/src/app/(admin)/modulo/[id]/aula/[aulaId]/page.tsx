@@ -57,7 +57,7 @@ export default function AulaPage() {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
 
       const [moduloRes, progressoRes] = await Promise.all([
         fetch(`${backendUrl}/modulos/${moduleId}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
@@ -107,7 +107,7 @@ export default function AulaPage() {
     const novoStatus = !isConcluida;
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
       await fetch(`${backendUrl}/aulas/concluir`, {
         method: 'POST',
         headers: {
@@ -163,7 +163,7 @@ export default function AulaPage() {
   const getFullUrl = (url?: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    return `${process.env.NEXT_PUBLIC_BACKEND_URL}${url}`;
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com'}${url}`;
   };
 
   const previewUrl = getFullUrl(aulaAtual?.videoUrl ? encodeURI(aulaAtual.videoUrl) : '');
@@ -171,7 +171,7 @@ export default function AulaPage() {
   // Transform /uploads/... to /secure-download/... for progressive limit
   let downloadUrl = getFullUrl(aulaAtual?.downloadUrl);
   const secureDownloadPath = aulaAtual?.downloadUrl?.startsWith('/uploads/') || aulaAtual?.isImage
-    ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/secure-download/${aulaAtual?.id}`
+    ? `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com'}/secure-download/${aulaAtual?.id}`
     : downloadUrl;
 
   const handleSecureDownload = async () => {
