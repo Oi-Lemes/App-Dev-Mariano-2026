@@ -483,7 +483,7 @@ export default function DashboardPage() {
 
             let destinationUrl = `/modulo/${modulo.id}`;
             // Lógica de Imagem (Backend vs Placeholder)
-            const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL;
+            const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
             let imageUrl = '/img/fundo.png';
 
             if (modulo.imagem) {
@@ -494,11 +494,8 @@ export default function DashboardPage() {
               }
             } else if ((modulo as any).capa) {
               imageUrl = (modulo as any).capa;
-            } else {
-              // Fallback para imagens estáticas antigas (apenas se não tiver imagem no banco)
-              let imageIndex = modulo.ordem || (modulos.findIndex(m => m.id === modulo.id) + 1);
-              if (imageIndex > 0 && imageIndex <= 40) imageUrl = `/img/md${imageIndex}.jpg`;
             }
+            // REMOVED LEGACY FALLBACK FOR HERBS IMAGES
 
             // Override Quiz
             if (modulo.id === 102) imageUrl = '/img/modulo_quiz.png';
