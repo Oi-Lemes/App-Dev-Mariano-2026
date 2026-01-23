@@ -37,7 +37,7 @@ export default function ModuloPage() {
         return;
       }
       try {
-        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+        const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
         const [moduloRes, progressoRes] = await Promise.all([
           fetch(`${backendUrl}/modulos/${id}`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
           fetch(`${backendUrl}/progresso`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
@@ -70,7 +70,7 @@ export default function ModuloPage() {
 
       const fetchProgresso = async () => {
         try {
-          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+          const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
           const progressoRes = await fetch(`${backendUrl}/progresso`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' });
           if (progressoRes.ok) {
             setAulasConcluidas(await progressoRes.json());
