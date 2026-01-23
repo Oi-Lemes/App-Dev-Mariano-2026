@@ -1,127 +1,140 @@
-// backend/prisma/seed.js
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const prisma = new PrismaClient();
 
-// Dados completos de todos os módulos e aulas do curso (SEU CONTEÚDO ORIGINAL)
-const modulosData = [
-    {
-        nome: 'Módulo 1 – Segredos das Plantas Medicinais',
-        description: 'Descubra o poder das ervas, desde a identificação até o cultivo seguro.',
-        aulas: [
-            { nome: 'Descobrindo o poder das ervas: identifique e conheça suas propriedades', videoUrl: 'https://descobrindo-o-poder-das--xrh9gpa.gamma.site/' },
-            { nome: 'Cultive e preserve suas próprias plantas medicinais em casa', videoUrl: 'https://seu-jardim-de-cura--dmq9aik.gamma.site/' },
-            { nome: 'Ervas em chás fitoterápicos', videoUrl: 'https://fast.wistia.net/embed/iframe/qug4mwlyn6?web_component=true&seo=true' },
-        ],
-    },
-    {
-        nome: 'Módulo 2 – Tinturas Mágicas: Extraia o Poder das Ervas',
-        description: 'Aprenda a criar tinturas potentes para o seu bem-estar diário.',
-        aulas: [
-            { nome: 'Tinturas: o que são e por que transformar suas ervas', videoUrl: 'https://tinturas-a-arte-de-extra-8kot30h.gamma.site/' },
-            { nome: 'Passo a passo: Tintura de ervas medicinais', videoUrl: 'https://fast.wistia.net/embed/iframe/78xlx6fjop?web_component=true&seo=true' },
-            { nome: 'Receitas poderosas de tinturas para o dia a dia', videoUrl: 'https://minha-farmacia-natural-5h7ustr.gamma.site/' },
-        ],
-    },
-    {
-        nome: 'Módulo 3 – Pomadas Naturais que Curam',
-        description: 'Transforme ingredientes naturais em pomadas para cicatrização e relaxamento.',
-        aulas: [
-            { nome: 'Fazendo óleo medicinal com ervas', videoUrl: 'https://fast.wistia.net/embed/iframe/c2g2o918i7?web_component=true&seo=true' },
-            { nome: 'Extraindo propriedades medicinais para aplicação direta', videoUrl: 'https://o-toque-que-cura-yh9llta.gamma.site/' },
-            { nome: 'Pomadas práticas: Vela de óleo medicinal', videoUrl: 'https://fast.wistia.net/embed/iframe/ye7c3ffs9p?web_component=true&seo=true' },
-        ],
-    },
-    {
-        nome: 'Módulo 4 – Cascas de Frutas: Tesouros Desperdiçados',
-        description: 'Aprenda a transformar cascas de frutas em poderosos remédios naturais.',
-        aulas: [
-            { nome: 'Descubra quais cascas podem virar remédios naturais', videoUrl: 'https://o-tesouro-na-casca-md753ks.gamma.site/' },
-            { nome: 'Como secar, conservar e armazenar para uso fitoterápico', videoUrl: 'https://guia-completo-de-secagem-kl9b6o8.gamma.site/' },
-            { nome: 'Transforme cascas em infusões e xaropes que curam', videoUrl: 'https://fast.wistia.net/embed/iframe/e5n4d46exq?web_component=true&seo=true' },
-        ],
-    },
-    {
-        nome: 'Módulo 5 – Cascas de Vegetais: Poder Oculto',
-        description: 'Desvende as propriedades medicinais das cascas que você joga fora.',
-        aulas: [
-            { nome: 'Propriedades medicinais das cascas que você joga fora', videoUrl: 'https://a-farmacia-que-voce-joga-acg4bcc.gamma.site/' },
-            { nome: 'Técnicas de desidratação e preparo eficazes', videoUrl: 'https://a-arte-de-preservar-a-na-t9omvpg.gamma.site/' },
-            { nome: 'Receitas de tinturas e xaropes que potencializam a saúde', videoUrl: 'https://elixires-da-natureza-4q0ooaf.gamma.site/' },
-        ],
-    },
-    {
-        nome: 'Módulo 6 – Fitoterapia Avançada: Combinações Inteligentes',
-        description: 'Crie suas próprias fórmulas personalizadas para resultados máximos.',
-        aulas: [
-            { nome: 'Como combinar ervas: Cataplasma com erva medicinal', videoUrl: 'https://fast.wistia.net/embed/iframe/kju2fcxklc?web_component=true&seo=true' },
-            { nome: 'Crie suas próprias receitas: Méis de ervas medicinais', videoUrl: 'https://fast.wistia.net/embed/iframe/edzc1q22uv?web_component=true&seo=true' },
-            { nome: 'Dosagem, preservação e cuidados para resultados duradouros', videoUrl: 'https://a-medida-da-natureza-aura6ot.gamma.site/' },
-        ],
-    },
-];
-
 async function main() {
-    console.log(`Iniciando o seeding com os dados REAIS do curso (${modulosData.length} módulos)...`);
+    console.log("🚀 Iniciando Seed Mestre: Sincronizando Banco de Dados com Arquivos...");
 
-    console.log('Limpando o banco de dados...');
-// É importante deletar tabelas relacionadas primeiro
-await prisma.progresso.deleteMany({});
-await prisma.aula.deleteMany({});
+    // --- 1. LIMPEZA ---
+    console.log("🧹 Limpando banco de dados...");
+    await prisma.progresso.deleteMany({});
+    await prisma.aula.deleteMany({});
+    await prisma.modulo.deleteMany({});
+    // await prisma.user.deleteMany({}); // Manter usuários se possível, ou descomentar se quiser reset total
+    console.log("✅ Banco limpo.");
 
-// Agora pode deletar os módulos
-await prisma.modulo.deleteMany({}); 
+    let globalModuleOrder = 1;
 
-// Delete o resto se necessário (links e usuários)
-// await prisma.magicLink.deleteMany({});
-// await prisma.user.deleteMany({});
-console.log('Banco de dados limpo.');
-    console.log('Criando módulos e aulas...');
-    let moduloOrder = 1;
-    for (const moduloData of modulosData) {
-        let aulaOrder = 1;
-        // Adiciona os campos 'descricao' e 'ordem' que faltavam nas aulas
-        const aulasParaCriar = moduloData.aulas.map(aula => ({
-            nome: aula.nome,
-            descricao: `Conteúdo da aula ${aula.nome}`, // Descrição placeholder, ajuste se necessário
-            videoUrl: aula.videoUrl,
-            ordem: aulaOrder++
-        }));
+    // --- 2. MÓDULOS PRINCIPAIS (PAPERTOYS) ---
+    const baseDir = path.join(__dirname, '../uploads/papertoys/Organizados');
 
-        // Cria o módulo, adicionando 'ordem' e 'imagem'
-        await prisma.modulo.create({
-            data: {
-                nome: moduloData.nome,
-                description: moduloData.description,
-                ordem: moduloOrder++,
-                imagem: `/img/md${moduloOrder - 1}.jpg`, // Imagem baseada na ordem
-                aulas: {
-                    create: aulasParaCriar
-                },
-            },
-        });
-        console.log(`> Módulo '${moduloData.nome}' criado.`);
+    if (fs.existsSync(baseDir)) {
+        const folders = fs.readdirSync(baseDir).filter(f => fs.statSync(path.join(baseDir, f)).isDirectory());
+        console.log(`📂 Encontradas ${folders.length} categorias em 'Organizados'.`);
+
+        for (const folder of folders) {
+            const folderPath = path.join(baseDir, folder);
+            const files = fs.readdirSync(folderPath).filter(f => f.match(/\.(png|jpg|jpeg)$/i));
+
+            if (files.length === 0) {
+                console.log(`⚠️ Ignorando pasta vazia: ${folder}`);
+                continue;
+            }
+
+            // Nome formatado: "DC_Comics" -> "DC Comics"
+            const modelName = folder.replace(/_/g, ' ');
+
+            // Primeira imagem serve de capa (ou tenta achar uma "capa" se houver lógica, mas vamos usar a primeira random file)
+            // Se houver pikachu no pokemon, preferir
+            let coverImage = `/uploads/papertoys/Organizados/${folder}/${files[0]}`;
+            if (folder.toLowerCase() === 'pokemon') {
+                const pikachu = files.find(f => f.toLowerCase().includes('pikachu'));
+                if (pikachu) coverImage = `/uploads/papertoys/Organizados/${folder}/${pikachu}`;
+            }
+
+            const modulo = await prisma.modulo.create({
+                data: {
+                    nome: modelName,
+                    description: `Coleção completa de Paper Toys: ${modelName}`,
+                    ordem: globalModuleOrder++,
+                    imagem: coverImage
+                }
+            });
+
+            console.log(`📦 Módulo Criado: ${modulo.nome} (${files.length} aulas)`);
+
+            let aulaOrder = 1;
+            for (const file of files) {
+                const aulaName = file.replace(/\.(png|jpg|jpeg)/i, '').replace(/_/g, ' ');
+                const fileUrl = `/uploads/papertoys/Organizados/${folder}/${file}`;
+
+                await prisma.aula.create({
+                    data: {
+                        nome: aulaName,
+                        descricao: "Baixe, imprima e monte!",
+                        videoUrl: fileUrl, // Preview
+                        downloadUrl: fileUrl,
+                        isImage: true,
+                        ordem: aulaOrder++,
+                        moduloId: modulo.id
+                    }
+                });
+            }
+        }
+    } else {
+        console.error(`❌ Diretório base não encontrado: ${baseDir}`);
     }
 
-    // Cria o módulo de certificado separadamente
+    // --- 3. BÔNUS (QUEBRA-CABEÇA) ---
+    const bonusDir = path.join(__dirname, '../uploads/quebra-cabeca');
+    if (fs.existsSync(bonusDir)) {
+        const bonusFiles = fs.readdirSync(bonusDir).filter(f => f.match(/\.(png|jpg|jpeg)$/i));
+
+        if (bonusFiles.length > 0) {
+            const bonusModulo = await prisma.modulo.create({
+                data: {
+                    nome: "🎁 Bônus – Quebra Cabeça LEGO Heróis",
+                    description: "Divirta-se montando quebra-cabeças incríveis!",
+                    ordem: 900, // Ordem alta para ficar no final
+                    imagem: `/uploads/quebra-cabeca/${bonusFiles[0]}` // Pega o primeiro como capa
+                }
+            });
+            console.log(`🎁 Módulo Bônus Criado: ${bonusModulo.nome}`);
+
+            let bonusOrder = 1;
+            for (const file of bonusFiles) {
+                const aulaName = file.replace(/\.(png|jpg|jpeg)/i, '').replace(/_/g, ' ');
+                const fileUrl = `/uploads/quebra-cabeca/${file}`;
+
+                await prisma.aula.create({
+                    data: {
+                        nome: aulaName,
+                        descricao: "Imprima e monte o quebra-cabeça!",
+                        videoUrl: fileUrl,
+                        downloadUrl: fileUrl,
+                        isImage: true,
+                        ordem: bonusOrder++,
+                        moduloId: bonusModulo.id
+                    }
+                });
+            }
+        }
+    }
+
+    // --- 4. CERTIFICADO ---
     await prisma.modulo.create({
         data: {
-            nome: 'EMISSÃO DO CERTIFICADO', // Nome usado na lógica do frontend
+            nome: 'EMISSÃO DO CERTIFICADO',
             description: 'Parabéns! Conclua o curso para emitir seu certificado.',
-            ordem: moduloOrder, // Garante que seja o último
-            imagem: '/img/md7.jpg' // Imagem específica
+            ordem: 999,
+            imagem: '/img/certificate-cover.jpg' // Imagem genérica ou uma que exista. Se não existir, vai ficar quebrado, ideal checar. 
+            // Vamos usar uma imagem de placeholder se não tivermos certeza, mas o frontend pode ter fallback.
         },
     });
-    console.log('> Módulo de Emissão de Certificado criado.');
+    console.log('🏆 Módulo Certificado Criado.');
 
-    // Remove a criação do usuário de teste, pois agora usamos webhooks
-    // console.log('> Usuário de teste não será criado (sistema de webhooks ativo).');
-
-    console.log(`\nSeeding (${modulosData.length} MÓDULOS) foi concluído com sucesso! ✅`);
+    console.log("✨ Seed Mestre Concluído!");
 }
 
 main()
     .catch((e) => {
-        console.error('Ocorreu um erro crítico durante o processo de seeding:', e);
+        console.error(e);
         process.exit(1);
     })
     .finally(async () => {
