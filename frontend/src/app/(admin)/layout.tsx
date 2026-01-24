@@ -129,7 +129,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
           />
         </svg>
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-[10px] font-bold text-white">{Math.round(percentage)}%</span>
+          <span className="text-[10px] font-bold text-white">{percentage.toFixed(1).replace('.0', '')}%</span>
         </div>
       </div>
     );
