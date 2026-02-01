@@ -142,11 +142,22 @@ const MOCK_MODULOS = [
 
 const app = express();
 
-app.use(cors({
-    origin: true, // REFLECTION: Allows any origin (stops the loop/blocking)
-    credentials: true,
-    optionsSuccessStatus: 200
-}));
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    // Allow any origin that matches our list OR allow all if simple reflection is preferred for now
+    // For "mudou nada" urgency, we will reflect ANY origin to ensure it works.
+    if (origin) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type,authorization');
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-secreto';
 const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
