@@ -145,7 +145,7 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
       const response = await fetch(`${backendUrl}/auth/login-phone`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -168,34 +168,35 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-[#0f172a] text-white p-4 relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-amber-400 to-emerald-500"></div>
-      <div className="absolute -top-20 -left-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl"></div>
-      <div className="absolute top-40 -right-20 w-72 h-72 bg-amber-500/5 rounded-full blur-3xl"></div>
+    <main className="flex min-h-screen flex-col items-center justify-center text-white p-4 relative overflow-hidden bg-black/80">
+      {/* Background Image */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-black/50 z-10" /> {/* Dark Overlay for readability */}
+        <img
+          src="/img/bg_login_mariano.jpg"
+          alt="Background"
+          className="w-full h-full object-cover"
+        />
+      </div>
 
-      <div className="w-full max-w-md p-8 space-y-8 bg-[#1e293b] border border-[#334155] rounded-2xl shadow-2xl relative z-10 transition-all hover:border-emerald-500/30">
-
-        <div className="mb-6">
-          <PwaInstallPrompt />
-        </div>
+      <div className="w-full max-w-md p-8 space-y-8 bg-black/60 backdrop-blur-xl border border-amber-500/30 rounded-2xl shadow-2xl relative z-10 transition-all hover:border-amber-500/50 hover:shadow-amber-900/20">
 
         <div className="text-center space-y-2">
-          <h1 className="text-4xl font-serif text-white tracking-wide italic">Área do Membro</h1>
-          <p className="text-gray-400 text-sm font-light">Digite seu WhatsApp para acessar</p>
+          <h1 className="text-4xl font-serif text-amber-100 tracking-wide italic drop-shadow-lg">Acessar Devocional <span className="text-amber-400">Mariano</span></h1>
+          <p className="text-amber-200/60 text-sm font-light tracking-widest uppercase">Digite seu WhatsApp para entrar</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-widest text-[#94a3b8]">Seu WhatsApp</label>
+            <label className="text-xs font-bold uppercase tracking-widest text-amber-500/80 ml-1">Seu WhatsApp</label>
             <div className="relative group">
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-emerald-400 transition-colors">📞</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500/50 group-focus-within:text-amber-400 transition-colors">📞</span>
               <input
                 type="tel"
                 value={phone}
                 onChange={handlePhoneChange}
                 placeholder="(11) 99999-9999"
-                className="w-full bg-[#0f172a] border border-[#334155] text-white text-lg py-4 pl-12 pr-4 rounded-xl focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all placeholder-gray-600 font-mono"
+                className="w-full bg-black/40 border border-amber-900/30 text-amber-100 text-lg py-4 pl-12 pr-4 rounded-xl focus:outline-none focus:border-amber-500/80 focus:ring-1 focus:ring-amber-500/50 transition-all placeholder-amber-900/40 font-mono shadow-inner"
                 required
               />
             </div>
@@ -204,22 +205,22 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading || phone.length < 14}
-            className="w-full py-4 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white font-bold uppercase tracking-widest rounded-xl shadow-lg transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+            className="w-full py-4 bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 hover:from-amber-500 hover:via-amber-400 hover:to-amber-500 text-white font-bold uppercase tracking-widest rounded-xl shadow-lg shadow-amber-900/50 transition-all transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none border border-amber-400/20"
           >
             {isLoading ? 'Verificando...' : 'Acessar Curso'}
           </button>
         </form>
 
         {message && (
-          <div className="p-4 bg-red-900/20 border border-red-500/30 rounded-xl">
-            <p className="text-center text-sm text-red-400 flex items-center justify-center gap-2">
+          <div className="p-4 bg-red-950/40 border border-red-500/30 rounded-xl">
+            <p className="text-center text-sm text-red-200 flex items-center justify-center gap-2 font-serif">
               <span>🚫</span> {message}
             </p>
           </div>
         )}
 
-        <div className="text-center pt-4 border-t border-[#334155]">
-          <p className="text-xs text-gray-600">Problemas no acesso? <span className="text-emerald-500 cursor-pointer hover:underline">Fale com o Suporte</span></p>
+        <div className="text-center pt-4 border-t border-amber-500/10">
+          <p className="text-xs text-amber-200/40">Problemas no acesso? <span className="text-amber-400 cursor-pointer hover:underline hover:text-amber-300 transition-colors">Fale com o Suporte</span></p>
         </div>
       </div>
 

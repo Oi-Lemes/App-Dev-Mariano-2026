@@ -39,7 +39,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
     if (!token) return;
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
       const [modulosRes, progressoRes] = await Promise.all([
         fetch(`${backendUrl}/modulos`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
         fetch(`${backendUrl}/progresso`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
@@ -136,7 +136,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#0f172a] font-sans text-gray-100 overflow-hidden relative">
+    <div className="flex min-h-screen bg-transparent font-sans text-gray-100 overflow-hidden relative">
       <AnimatePresence>
         {isSidebarOpen && (
           <motion.aside

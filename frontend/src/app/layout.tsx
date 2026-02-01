@@ -37,6 +37,9 @@ const fredoka = Fredoka({
 export const metadata = {
   title: 'Área de Membros',
   description: 'Acesso exclusivo para membros do curso.',
+  icons: {
+    icon: '/icon.jpg',
+  },
 };
 
 export default function RootLayout({

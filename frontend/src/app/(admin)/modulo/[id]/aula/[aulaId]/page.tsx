@@ -2,14 +2,17 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import ReactMarkdown from 'react-markdown';
 
 // Tipos
 interface Aula {
   id: number;
   nome: string;
   videoUrl?: string;
+  pdfUrl?: string; // Content fix
   downloadUrl?: string;
   isImage?: boolean; // Novo campo
+  content?: string; // Conteúdo em texto
 }
 interface Modulo {
   id: number;
@@ -41,6 +44,8 @@ export default function AulaPage() {
   const router = useRouter();
   const { id: moduleId, aulaId } = params;
 
+  const [isLoadingPdf, setIsLoadingPdf] = useState(true); // Loading visual min
+  const [pdfLoaded, setPdfLoaded] = useState(false); // Evento real do iframe
   const [modulo, setModulo] = useState<Modulo | null>(null);
   const [aulasConcluidas, setAulasConcluidas] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -77,6 +82,12 @@ export default function AulaPage() {
       setIsLoading(false);
     }
   }, [moduleId, router]);
+
+  useEffect(() => {
+    if (aulaId) {
+      setIsLoadingPdf(true);
+    }
+  }, [aulaId]);
 
   useEffect(() => {
     fetchData();
@@ -131,30 +142,27 @@ export default function AulaPage() {
     }
   };
 
-  const handleProximo = () => {
+  const handleProximo = async () => {
     setFeedbackMessage(null);
 
-    if (modulo && !isUltimaAulaDoModulo) {
-      const proximaAula = modulo.aulas[aulaIndex + 1];
-      router.push(`/modulo/${moduleId}/aula/${proximaAula.id}`);
-    } else if (modulo) {
-      const moduloCompleto = modulo.aulas.every(a => aulasConcluidas.includes(a.id));
-
-      if (moduloCompleto) {
-        router.push('/dashboard');
-      } else {
-        const primeiraAulaNaoConcluida = modulo.aulas.find(a => !aulasConcluidas.includes(a.id));
-        if (primeiraAulaNaoConcluida) {
-          setFeedbackMessage(`Aguarde... você precisa concluir a aula "${primeiraAulaNaoConcluida.nome}".`);
-          setIsRedirecting(true);
-          setTimeout(() => {
-            router.push(`/modulo/${moduleId}/aula/${primeiraAulaNaoConcluida.id}`);
-          }, 3000);
-        } else {
-          router.push('/dashboard');
-        }
-      }
+    // 1. Força a conclusão da aula atual se ainda não estiver concluída
+    if (aulaAtual && !isConcluida) {
+      await handleMarcarComoConcluida();
     }
+
+    // Pequeno delay para garantir que o state atualizou ou que o usuário perceba a ação
+    setTimeout(() => {
+      if (modulo && !isUltimaAulaDoModulo) {
+        const proximaAula = modulo.aulas[aulaIndex + 1];
+        router.push(`/modulo/${moduleId}/aula/${proximaAula.id}`);
+      } else if (modulo) {
+        // Verifica se TODAS estão concluídas (agora incluindo esta última)
+        // Mas como o state 'aulasConcluidas' pode nao ter atualizado ainda neste ciclo,
+        // podemos confiar que se esta era a única que faltava, agora está ok.
+
+        router.push('/dashboard');
+      }
+    }, 500);
   };
 
   const isVideo = aulaAtual?.videoUrl?.includes('wistia') || aulaAtual?.videoUrl?.includes('youtube');
@@ -236,8 +244,56 @@ export default function AulaPage() {
       </header>
       <main className="space-y-6">
 
-        <div className="bg-gray-900 rounded-lg overflow-hidden shadow-2xl border border-gray-800">
-          {aulaAtual.isImage ? (
+        {aulaAtual.pdfUrl ? (
+          <div className="w-full h-[85vh] bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-white/10 relative">
+            {/* Loading State Overlay */}
+            {(isLoadingPdf || !pdfLoaded) && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-30">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+                <p className="text-amber-100 font-serif text-lg animate-pulse">Carregando seu devocional...</p>
+              </div>
+            )}
+
+            <iframe
+              src={`${getFullUrl(aulaAtual.pdfUrl)}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
+              className="w-full h-full"
+              allowFullScreen
+              title="Devocional"
+              onLoad={() => {
+                setPdfLoaded(true);
+                setTimeout(() => setIsLoadingPdf(false), 35000); // 35 segundos de loading para compensar o tamanho do arquivo
+              }}
+            />
+          </div>
+        ) : aulaAtual.videoUrl && aulaAtual.isImage ? (
+          <div className="w-full relative rounded-xl overflow-hidden shadow-2xl mb-8 border border-white/10 group">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none" />
+            <img
+              src={getFullUrl(aulaAtual.videoUrl)}
+              alt={aulaAtual.nome}
+              className="w-full h-auto object-contain transform group-hover:scale-105 transition-transform duration-700 ease-in-out"
+            />
+          </div>
+        ) : null
+        }
+
+        {
+          aulaAtual.content ? (
+            <div className="bg-black/40 backdrop-blur-md border border-white/10 p-8 md:p-12 rounded-xl shadow-2xl text-gray-100">
+              <div className="prose prose-invert prose-lg max-w-none font-light tracking-wide">
+                <ReactMarkdown
+                  components={{
+                    h1: ({ node, ...props }) => <h1 className="font-serif text-amber-500/90 text-3xl mb-6 border-b border-white/10 pb-4" {...props} />,
+                    h2: ({ node, ...props }) => <h2 className="font-serif text-amber-200/90 text-2xl mt-8 mb-4" {...props} />,
+                    p: ({ node, ...props }) => <p className="leading-loose text-gray-200 mb-4" {...props} />,
+                    strong: ({ node, ...props }) => <strong className="text-amber-100 font-semibold" {...props} />
+                  }}
+                >
+                  {aulaAtual.content}
+                </ReactMarkdown>
+              </div>
+            </div>
+          ) : aulaAtual.isImage ? (
             <div className="flex justify-center items-center p-4 bg-gray-800/50">
               {/* Imagem do Paper Toy */}
               <img
@@ -263,38 +319,41 @@ export default function AulaPage() {
               ) : (
                 <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
               )
-            ) : (
-              <div className="flex items-center justify-center w-full aspect-video bg-gray-900">
-                <p className="text-gray-400">Conteúdo indisponível para esta aula.</p>
-              </div>
-            )
-          )}
-        </div>
+            ) : null
+          )
+        }
+
 
         {/* --- Area de Download para Paper Toys --- */}
-        {aulaAtual.isImage && aulaAtual.downloadUrl && (
-          <div className="flex justify-center">
-            <button
-              onClick={handleSecureDownload}
-              className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
-            >
-              <DownloadIcon />
-              BAIXAR ARQUIVO (PDF/IMAGEM)
-            </button>
-          </div>
-        )}
+        {
+          aulaAtual.isImage && aulaAtual.downloadUrl && (
+            <div className="flex justify-center">
+              <button
+                onClick={handleSecureDownload}
+                className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
+              >
+                <DownloadIcon />
+                BAIXAR ARQUIVO (PDF/IMAGEM)
+              </button>
+            </div>
+          )
+        }
 
-        {isUltimaAulaDoModulo && isModuloConcluido && (
-          <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center">
-            <h3 className="font-bold text-lg">Parabéns!</h3>
-            <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
-          </div>
-        )}
-        {feedbackMessage && (
-          <div className={`px-4 py-3 rounded-lg text-center ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
-            <p>{feedbackMessage}</p>
-          </div>
-        )}
+        {
+          isUltimaAulaDoModulo && isModuloConcluido && (
+            <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center">
+              <h3 className="font-bold text-lg">Parabéns!</h3>
+              <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+            </div>
+          )
+        }
+        {
+          feedbackMessage && (
+            <div className={`px-4 py-3 rounded-lg text-center ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
+              <p>{feedbackMessage}</p>
+            </div>
+          )
+        }
 
         {/* Botão Manual Removido para forçar progresso via Download */}
         <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
@@ -303,11 +362,11 @@ export default function AulaPage() {
             disabled={isRedirecting}
             className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
           >
-            <span>{isUltimaAulaDoModulo ? 'Finalizar Módulo' : 'Próxima'}</span>
+            <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
             {!isUltimaAulaDoModulo && <ArrowRightIcon />}
           </button>
         </div>
-      </main>
-    </div>
+      </main >
+    </div >
   );
 }

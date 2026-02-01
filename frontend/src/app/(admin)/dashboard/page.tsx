@@ -25,10 +25,10 @@ const TypewriterTitle = ({ text, fontSize = '250px', viewBox = '0 0 1500 400', y
           y={y} // Centralização vertical calibrada para Pinyon Script
           textAnchor="middle"
           dominantBaseline="middle"
-          stroke="#FACC15" // Amarelo LEGO
-          strokeWidth="3" // Traço mais grosso para acompanhar o tamanho
+          stroke="#D4AF37" // Ouro Metálico (Mais sóbrio e elegante)
+          strokeWidth="2" // Traço um pouco mais fino para a fonte script
           strokeDasharray="6000"
-          fill="#FACC15" // Preenchimento Amarelo
+          fill="#D4AF37" // Preenchimento Ouro Metálico
           variants={{
             hidden: {
               strokeDashoffset: 6000,
@@ -47,7 +47,7 @@ const TypewriterTitle = ({ text, fontSize = '250px', viewBox = '0 0 1500 400', y
             }
           }}
           style={{
-            fontFamily: 'var(--font-patrick-hand)',
+            fontFamily: 'var(--font-pinyon-script)', // Alterado para Pinyon Script (Mais elegante/Cristão)
             fontSize: fontSize, // Fonte parametrizável
             filter: 'drop-shadow(0px 0px 12px rgba(0,0,0,0.9))' // Sombra intensa
           }}
@@ -197,7 +197,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       setErrorMessage(null);
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
 
       console.log('🔍 DEBUG: Backend URL being used:', backendUrl); // LOG PARA DEBUG
 
@@ -410,11 +410,12 @@ export default function DashboardPage() {
         {/* Background Image Layer */}
         <div className="absolute inset-0 z-0">
           <Image
-            src="https://media4.giphy.com/media/v1.Y2lkPTc5MGI3NjExNWY0OGQ5aG04cGc0ODU3ZTRzdmlmdXZkazE4ZWZjM3F1ZWE3Z2x6MCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/mWnu8pS2MDcbRJ7YJ0/giphy.gif"
-            alt="Lego Background GIF"
+            src="/img_fundo_cruz.gif"
+            alt="Fundo 365 Dias com Maria"
             fill
-            className="object-cover opacity-80 transition-transform duration-1000 group-hover:scale-105"
+            className="object-cover opacity-60 transition-transform duration-1000 group-hover:scale-105"
             priority
+            unoptimized // Importante para GIFs
           />
           {/* Overlays para Contraste e Blend Natural */}
           <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]"></div>
@@ -427,10 +428,16 @@ export default function DashboardPage() {
           {/* Títulos */}
           <div className="flex flex-col items-center justify-center -space-y-6 md:-space-y-12 mb-8 w-full">
             <div className="w-[80%] md:w-[60%]">
-              <TypewriterTitle text="Bem vindo ao" fontSize="140px" viewBox="0 0 1500 300" y="80%" className="p-0 m-0 drop-shadow-2xl" />
+              <TypewriterTitle text="Bem vindo ao" fontSize="100px" viewBox="0 0 1500 300" y="80%" className="p-0 m-0 drop-shadow-2xl" />
             </div>
             <div className="w-full">
-              <TypewriterTitle text="Pappertoys" fontSize="250px" viewBox="0 0 1500 400" y="70%" className="p-0 m-0 drop-shadow-2xl" />
+              <TypewriterTitle text="365 dias com Maria" fontSize="130px" viewBox="0 0 1500 400" y="70%" className="p-0 m-0 drop-shadow-2xl" />
+            </div>
+            {/* Subtítulo Adicionado */}
+            <div className="mt-4 md:mt-8">
+              <p className="font-serif italic text-xl md:text-3xl text-amber-200/90 tracking-wider drop-shadow-md">
+                "Um caminho de fé e amor"
+              </p>
             </div>
           </div>
 
@@ -438,7 +445,7 @@ export default function DashboardPage() {
           <div className="relative w-full max-w-xl mx-auto mt-4 group">
             <input
               type="text"
-              placeholder="Digite o nome do personagem (ex: Batman)..."
+              placeholder="Busque por aulas ou temas..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-6 pr-16 py-4 bg-gray-900/80 backdrop-blur-md border-2 border-white/20 rounded-full text-white placeholder-gray-400 focus:outline-none focus:border-yellow-400 focus:ring-2 focus:ring-yellow-400/50 transition-all shadow-xl text-lg"
@@ -530,7 +537,7 @@ export default function DashboardPage() {
                   <img
                     src={imageUrl}
                     alt={modulo.nome}
-                    className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
+                    className={`w-full h-full object-cover object-top transform group-hover:scale-110 transition-transform duration-700 ease-in-out ${shouldApplyGrayscale ? 'grayscale-[0.8] group-hover:grayscale-0' : ''}`}
                     onError={(e) => { e.currentTarget.src = '/img/fundo.png'; }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent"></div>

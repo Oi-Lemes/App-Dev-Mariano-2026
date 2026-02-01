@@ -49,7 +49,9 @@ model Aula {
   id         Int      @id @default(autoincrement())
   nome       String
   descricao  String
-  videoUrl   String
+  videoUrl   String?
+  pdfUrl     String? // URL do arquivo PDF para leitura integrada
+  content    String? // Conteúdo em texto da aula
   downloadUrl String? // Link para baixar o PDF/Imagem
   isImage    Boolean @default(false) // Se true, o videoUrl age como preview de imagem
   ordem      Int
