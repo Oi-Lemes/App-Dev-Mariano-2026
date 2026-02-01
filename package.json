@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "build": "cd backend && npm install && npx prisma generate",
-    "start": "cd backend && node prisma/seed_master.js && node server.js"
+    "start": "cd backend && node prisma/seed_catholic.js && node server.js"
   },
   "engines": {
     "node": ">=18.0.0"

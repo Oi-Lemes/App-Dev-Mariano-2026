@@ -549,10 +549,8 @@ As 14 estações do caminho da Cruz. Rezar meditando cada passo, oferecendo repa
         {
           nome: 'Como Rezar o Terço',
           descricao: 'Guia ilustrado com orações e mistérios.',
-          videoUrl: '/uploads/terco.png',
-          isImage: true, // Use image preview logic
-          pdfUrl: '/uploads/imgs/o_terco.pdf', // Nome seguro (sem espaços/acentos)
-          downloadUrl: '/uploads/imgs/o_terco.pdf',
+          videoUrl: '/img/lessons/diagrama_terco.png', // FIXED: Local diagram
+          isImage: true,
           content: `**O Santo Rosário**
           
 O Rosário é uma das orações mais queridas da Igreja e um poderoso instrumento de conversão. Ao recitar as Ave-Marias, meditamos os mistérios da vida de Jesus e de Maria.
@@ -563,8 +561,28 @@ O Rosário é uma das orações mais queridas da Igreja e um poderoso instrument
 3.  Contemple os Mistérios (Gozosos, Dolorosos, Gloriosos ou Luminosos) a cada dezena.
 4.  Ao final, reze a Salve Rainha.
 
-Você pode visualizar o guia completo acima ou baixar o PDF clicando no botão abaixo.`
+Você pode visualizar o guia completo acima.`,
         }
+      ]
+    },
+    {
+      nome: 'Devocional 2026',
+      description: 'Acompanhe dia a dia o nosso itinerário.',
+      ordem: 300,
+      imagem: '/img/lessons/janeiro.png',
+      aulas: [
+        { nome: 'Janeiro', videoUrl: '/img/lessons/janeiro.png', isImage: true, pdfUrl: '/devocionais/janeiro.pdf' },
+        { nome: 'Fevereiro', videoUrl: '/img/lessons/fevereiro.png', isImage: true, pdfUrl: '/devocionais/fevereiro.pdf' },
+        { nome: 'Março', videoUrl: '/img/lessons/marco.png', isImage: true, pdfUrl: '/devocionais/marco.pdf' },
+        { nome: 'Abril', videoUrl: '/img/lessons/abril.png', isImage: true, pdfUrl: '/devocionais/abril.pdf' },
+        { nome: 'Maio', videoUrl: '/img/lessons/maio.png', isImage: true, pdfUrl: '/devocionais/maio.pdf' },
+        { nome: 'Junho', videoUrl: '/img/lessons/junho.png', isImage: true, pdfUrl: '/devocionais/junho.pdf' },
+        { nome: 'Julho', videoUrl: '/img/lessons/julho.png', isImage: true, pdfUrl: '/devocionais/julho.pdf' },
+        { nome: 'Agosto', videoUrl: '/img/lessons/agosto.png', isImage: true, pdfUrl: '/devocionais/agosto.pdf' },
+        { nome: 'Setembro', videoUrl: '/img/lessons/setembro.png', isImage: true, pdfUrl: '/devocionais/setembro.pdf' },
+        { nome: 'Outubro', videoUrl: '/img/lessons/outubro.png', isImage: true, pdfUrl: '/devocionais/outubro.pdf' }, // Assuming outubro.pdf exists or will default
+        { nome: 'Novembro', videoUrl: '/img/lessons/novembro.png', isImage: true, pdfUrl: '/devocionais/novembro.pdf' },
+        { nome: 'Dezembro', videoUrl: '/img/lessons/dezembro.png', isImage: true, pdfUrl: '/devocionais/dezembro.pdf' }
       ]
     }
   ]; // Fim do array modulos

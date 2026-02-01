@@ -21,7 +21,7 @@ export default function Cadastro() {
           email: email,
           // O backend precisa saber para onde redirecionar o usuário
           // depois que ele clicar no link mágico.
-          destination: "http://localhost:3000/auth/callback",
+          destination: "https://devocionalmariano2026.online/auth/callback", // FORCE PROD
         }),
       });
 
