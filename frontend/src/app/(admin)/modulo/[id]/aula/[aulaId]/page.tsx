@@ -3,6 +3,12 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
+import { Document, Page, pdfjs } from 'react-pdf';
+import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import 'react-pdf/dist/esm/Page/TextLayer.css';
+
+// Configuração do Worker do PDF.js (Essencial para Next.js)
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 // Tipos
 interface Aula {

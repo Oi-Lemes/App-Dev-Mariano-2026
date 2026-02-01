@@ -12,16 +12,16 @@
     "@google-cloud/vertexai": "^1.10.0",
     "@google/generative-ai": "^0.24.1",
     "@types/qrcode": "^1.5.5",
-    "elevenlabs-node": "^2.0.3",
+    "canvas-confetti": "^1.9.2",
     "elevenlabs-node": "^2.0.3",
     "framer-motion": "^12.23.24",
-    "canvas-confetti": "^1.9.2",
     "next": "^16.1.0",
     "openai": "^6.2.0",
     "qrcode": "^1.5.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-markdown": "^10.1.0"
+    "react-markdown": "^10.1.0",
+    "react-pdf": "^10.3.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
