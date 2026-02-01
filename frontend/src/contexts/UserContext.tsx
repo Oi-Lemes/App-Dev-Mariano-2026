@@ -48,7 +48,7 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
     }
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+      const backendUrl = 'https://app-dev-mariano-2026.onrender.com'; // FORCE PROD
       const response = await fetch(`${backendUrl}/me`, {
         headers: {
           'Authorization': `Bearer ${token}`

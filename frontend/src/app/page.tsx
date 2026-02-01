@@ -145,7 +145,7 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = 'https://app-dev-mariano-2026.onrender.com'; // FORCE PROD
       const response = await fetch(`${backendUrl}/auth/login-phone`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

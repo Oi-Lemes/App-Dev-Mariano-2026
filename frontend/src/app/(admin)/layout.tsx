@@ -39,7 +39,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
     if (!token) return;
 
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = 'https://app-dev-mariano-2026.onrender.com'; // FORCE PROD
       const [modulosRes, progressoRes] = await Promise.all([
         fetch(`${backendUrl}/modulos`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' }),
         fetch(`${backendUrl}/progresso`, { headers: { 'Authorization': `Bearer ${token}` }, cache: 'no-store' })
@@ -178,7 +178,7 @@ const LayoutWithSidebar = ({ children }: { children: React.ReactNode }) => {
 
                       try {
                         const token = localStorage.getItem('token');
-                        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com'}/upload-profile-image`, {
+                        const res = await fetch(`https://app-dev-mariano-2026.onrender.com/upload-profile-image`, {
                           method: 'POST',
                           headers: { 'Authorization': `Bearer ${token}` },
                           body: formData

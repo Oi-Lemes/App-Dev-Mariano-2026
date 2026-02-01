@@ -197,7 +197,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       setErrorMessage(null);
-      const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = 'https://app-dev-mariano-2026.onrender.com'; // FORCE PROD
 
       console.log('🔍 DEBUG: Backend URL being used:', backendUrl); // LOG PARA DEBUG
 
@@ -490,7 +490,7 @@ export default function DashboardPage() {
 
             let destinationUrl = `/modulo/${modulo.id}`;
             // Lógica de Imagem (Backend vs Placeholder)
-            const backendUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'https://moldes.onrender.com';
+            const backendUrl = 'https://app-dev-mariano-2026.onrender.com'; // FORCE PROD
             let imageUrl = '/img/fundo.png';
 
             if (modulo.imagem) {
