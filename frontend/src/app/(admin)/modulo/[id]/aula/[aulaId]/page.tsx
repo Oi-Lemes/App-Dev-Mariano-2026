@@ -316,7 +316,7 @@ export default function AulaPage() {
               </button>
             </div>
 
-            <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center">
+            <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center overflow-y-auto" style={{ maxHeight: '80vh', WebkitOverflowScrolling: 'touch' }}>
 
               {/* React PDF Viewer */}
               {pdfBlob && (
@@ -336,7 +336,8 @@ export default function AulaPage() {
                   className="flex flex-col items-center w-full"
                 >
                   {numPages && Array.from(new Array(numPages), (el, index) => (
-                    <div key={`page_${index + 1}`} className="w-full mb-1 sm:mb-4 shadow-lg relative bg-gray-800">
+                    <div key={`page_${index + 1}`} className="w-full mb-1 sm:mb-4 shadow-lg relative bg-gray-800 min-h-[300px]">
+                      {/* Lazy loading wrapper could go here, but rely on Page loading prop first */}
                       <Page
                         key={`page_${index + 1}`}
                         pageNumber={index + 1}
@@ -346,7 +347,7 @@ export default function AulaPage() {
                         canvasBackground="transparent"
                         className="w-full mix-blend-normal"
                         loading={
-                          <div className="aspect-[2/3] w-full bg-gray-800/50 animate-pulse flex items-center justify-center">
+                          <div className="aspect-[2/3] w-full bg-gray-800/50 animate-pulse flex items-center justify-center h-full">
                             <span className="text-xs text-gray-500">Carregando pág. {index + 1}...</span>
                           </div>
                         }
