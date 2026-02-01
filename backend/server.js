@@ -195,7 +195,9 @@ const allowedOrigins = [
     'http://localhost:3002',
     'https://areamembrosplantascompletinho-9n1c.vercel.app',
     'https://areademembros.saberesdafloresta.site',
-    'https://www.areademembros.saberesdafloresta.site'
+    'https://www.areademembros.saberesdafloresta.site',
+    'https://devocionalmariano2026.online',
+    'https://www.devocionalmariano2026.online'
 ];
 
 if (process.env.FRONTEND_URL) {
