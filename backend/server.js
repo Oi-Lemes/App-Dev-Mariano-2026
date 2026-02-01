@@ -141,6 +141,12 @@ const MOCK_MODULOS = [
 ];
 
 const app = express();
+
+app.use(cors({
+    origin: true, // REFLECTION: Allows any origin (stops the loop/blocking)
+    credentials: true,
+    optionsSuccessStatus: 200
+}));
 const PORT = process.env.PORT || 3001;
 const JWT_SECRET = process.env.JWT_SECRET || 'segredo-super-secreto';
 const PARADISE_API_TOKEN = process.env.PARADISE_API_TOKEN;
@@ -204,20 +210,7 @@ if (process.env.FRONTEND_URL) {
     allowedOrigins.push(process.env.FRONTEND_URL);
 }
 
-app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('BLOCKED BY CORS:', origin);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-    optionsSuccessStatus: 200
-}));
+
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads'))); // Servir imagens estáticas (DEPOIS DO CORS)
 
