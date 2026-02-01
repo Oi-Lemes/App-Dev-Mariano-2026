@@ -142,6 +142,17 @@ const MOCK_MODULOS = [
 
 const app = express();
 
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// --- SERVING STATIC FILES ---
+// Images
+app.use('/img', express.static(path.join(__dirname, 'uploads/img')));
+// PDFs (Devocionais)
+app.use('/devocionais', express.static(path.join(__dirname, 'uploads/devocionais')));
+// Legacy Uploads
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 app.use((req, res, next) => {
     const origin = req.headers.origin;
     // Allow any origin that matches our list OR allow all if simple reflection is preferred for now
