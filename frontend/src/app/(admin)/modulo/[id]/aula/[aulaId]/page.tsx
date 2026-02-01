@@ -83,11 +83,60 @@ export default function AulaPage() {
     }
   }, [moduleId, router]);
 
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [pdfObjectUrl, setPdfObjectUrl] = useState<string | null>(null);
+
   useEffect(() => {
-    if (aulaId) {
+    if (aulaId && aulaAtual?.pdfUrl) {
       setIsLoadingPdf(true);
+      setDownloadProgress(0);
+      setPdfObjectUrl(null);
+
+      const url = getFullUrl(aulaAtual.pdfUrl);
+      const xhr = new XMLHttpRequest();
+
+      xhr.open('GET', url, true);
+      xhr.responseType = 'blob';
+
+      xhr.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = (event.loaded / event.total) * 100;
+          setDownloadProgress(percentComplete);
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          const blob = xhr.response;
+          const blobUrl = URL.createObjectURL(blob);
+          setPdfObjectUrl(blobUrl);
+          setIsLoadingPdf(false);
+        } else {
+          // Fallback em caso de erro no blob
+          console.error("Erro ao baixar PDF via Blob, usando URL direta");
+          setPdfObjectUrl(url);
+          setIsLoadingPdf(false);
+        }
+      };
+
+      xhr.onerror = () => {
+        console.error("Erro XHR, usando URL direta");
+        setPdfObjectUrl(url);
+        setIsLoadingPdf(false);
+      };
+
+      xhr.send();
+
+      return () => {
+        xhr.abort();
+        // Nota: Revogar o ObjectURL aqui pode quebrar se o comp desmontar rápido, 
+        // mas idealmente deveríamos limpar.
+        // if (pdfObjectUrl) URL.revokeObjectURL(pdfObjectUrl);
+      };
+    } else {
+      setIsLoadingPdf(false);
     }
-  }, [aulaId]);
+  }, [aulaId, aulaAtual?.pdfUrl]); // Re-run if ID or URL changes
 
   useEffect(() => {
     fetchData();
@@ -245,25 +294,49 @@ export default function AulaPage() {
       <main className="space-y-6">
 
         {aulaAtual.pdfUrl ? (
-          <div className="w-full h-[85vh] bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-white/10 relative">
-            {/* Loading State Overlay */}
-            {(isLoadingPdf || !pdfLoaded) && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-30">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-                <p className="text-amber-100 font-serif text-lg animate-pulse">Carregando seu devocional...</p>
-              </div>
-            )}
+          <div className="w-full bg-gray-900 rounded-xl overflow-hidden shadow-2xl border border-white/10 relative flex flex-col">
 
-            <iframe
-              src={`${getFullUrl(aulaAtual.pdfUrl)}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
-              className="w-full h-full"
-              allowFullScreen
-              title="Devocional"
-              onLoad={() => {
-                setPdfLoaded(true);
-                setTimeout(() => setIsLoadingPdf(false), 35000); // 35 segundos de loading para compensar o tamanho do arquivo
-              }}
-            />
+            {/* Mobile Actions Header */}
+            <div className="bg-gray-800/80 backdrop-blur p-3 flex justify-between items-center md:hidden border-b border-white/10">
+              <span className="text-xs text-gray-400">PDF Reader</span>
+              <button
+                onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl), '_blank')}
+                className="text-xs bg-amber-600/20 text-amber-500 px-3 py-1.5 rounded-full hover:bg-amber-600/30 transition-colors flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Baixar / Abrir Externo
+              </button>
+            </div>
+
+            <div className="w-full h-[85vh] relative bg-gray-900">
+              {/* Real Loading State Overlay */}
+              {(isLoadingPdf || !pdfObjectUrl) && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-900 z-30 p-6 text-center">
+                  <div className="w-full max-w-xs bg-gray-800 rounded-full h-2.5 mb-4 border border-white/10 overflow-hidden">
+                    <div
+                      className="bg-amber-500 h-2.5 rounded-full transition-all duration-300 ease-out shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                      style={{ width: `${downloadProgress}%` }}
+                    ></div>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <span className="text-amber-500 font-bold text-xl">{Math.round(downloadProgress)}%</span>
+                    <p className="text-gray-400 text-sm animate-pulse">Carregando seu devocional em alta velocidade...</p>
+                  </div>
+                </div>
+              )}
+
+              {pdfObjectUrl && (
+                <iframe
+                  src={`${pdfObjectUrl}#toolbar=0&navpanes=0&scrollbar=1&view=FitH`}
+                  className="w-full h-full"
+                  allowFullScreen
+                  title="Devocional"
+                  style={{ border: 'none' }}
+                />
+              )}
+            </div>
           </div>
         ) : aulaAtual.videoUrl && aulaAtual.isImage ? (
           <div className="w-full relative rounded-xl overflow-hidden shadow-2xl mb-8 border border-white/10 group">
