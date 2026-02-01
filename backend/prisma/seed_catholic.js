@@ -571,18 +571,18 @@ Você pode visualizar o guia completo acima.`,
       ordem: 300,
       imagem: '/img/lessons/janeiro.png',
       aulas: [
-        { nome: 'Janeiro', videoUrl: '/img/lessons/janeiro.png', isImage: true, pdfUrl: '/devocionais/janeiro.pdf' },
-        { nome: 'Fevereiro', videoUrl: '/img/lessons/fevereiro.png', isImage: true, pdfUrl: '/devocionais/fevereiro.pdf' },
-        { nome: 'Março', videoUrl: '/img/lessons/marco.png', isImage: true, pdfUrl: '/devocionais/marco.pdf' },
-        { nome: 'Abril', videoUrl: '/img/lessons/abril.png', isImage: true, pdfUrl: '/devocionais/abril.pdf' },
-        { nome: 'Maio', videoUrl: '/img/lessons/maio.png', isImage: true, pdfUrl: '/devocionais/maio.pdf' },
-        { nome: 'Junho', videoUrl: '/img/lessons/junho.png', isImage: true, pdfUrl: '/devocionais/junho.pdf' },
-        { nome: 'Julho', videoUrl: '/img/lessons/julho.png', isImage: true, pdfUrl: '/devocionais/julho.pdf' },
-        { nome: 'Agosto', videoUrl: '/img/lessons/agosto.png', isImage: true, pdfUrl: '/devocionais/agosto.pdf' },
-        { nome: 'Setembro', videoUrl: '/img/lessons/setembro.png', isImage: true, pdfUrl: '/devocionais/setembro.pdf' },
-        { nome: 'Outubro', videoUrl: '/img/lessons/outubro.png', isImage: true, pdfUrl: '/devocionais/outubro.pdf' }, // Assuming outubro.pdf exists or will default
-        { nome: 'Novembro', videoUrl: '/img/lessons/novembro.png', isImage: true, pdfUrl: '/devocionais/novembro.pdf' },
-        { nome: 'Dezembro', videoUrl: '/img/lessons/dezembro.png', isImage: true, pdfUrl: '/devocionais/dezembro.pdf' }
+        { nome: 'Janeiro', descricao: 'Devocional de Janeiro', videoUrl: '/img/lessons/janeiro.png', isImage: true, pdfUrl: '/devocionais/janeiro.pdf' },
+        { nome: 'Fevereiro', descricao: 'Devocional de Fevereiro', videoUrl: '/img/lessons/fevereiro.png', isImage: true, pdfUrl: '/devocionais/fevereiro.pdf' },
+        { nome: 'Março', descricao: 'Devocional de Março', videoUrl: '/img/lessons/marco.png', isImage: true, pdfUrl: '/devocionais/marco.pdf' },
+        { nome: 'Abril', descricao: 'Devocional de Abril', videoUrl: '/img/lessons/abril.png', isImage: true, pdfUrl: '/devocionais/abril.pdf' },
+        { nome: 'Maio', descricao: 'Devocional de Maio', videoUrl: '/img/lessons/maio.png', isImage: true, pdfUrl: '/devocionais/maio.pdf' },
+        { nome: 'Junho', descricao: 'Devocional de Junho', videoUrl: '/img/lessons/junho.png', isImage: true, pdfUrl: '/devocionais/junho.pdf' },
+        { nome: 'Julho', descricao: 'Devocional de Julho', videoUrl: '/img/lessons/julho.png', isImage: true, pdfUrl: '/devocionais/julho.pdf' },
+        { nome: 'Agosto', descricao: 'Devocional de Agosto', videoUrl: '/img/lessons/agosto.png', isImage: true, pdfUrl: '/devocionais/agosto.pdf' },
+        { nome: 'Setembro', descricao: 'Devocional de Setembro', videoUrl: '/img/lessons/setembro.png', isImage: true, pdfUrl: '/devocionais/setembro.pdf' },
+        { nome: 'Outubro', descricao: 'Devocional de Outubro', videoUrl: '/img/lessons/outubro.png', isImage: true, pdfUrl: '/devocionais/outubro.pdf' },
+        { nome: 'Novembro', descricao: 'Devocional de Novembro', videoUrl: '/img/lessons/novembro.png', isImage: true, pdfUrl: '/devocionais/novembro.pdf' },
+        { nome: 'Dezembro', descricao: 'Devocional de Dezembro', videoUrl: '/img/lessons/dezembro.png', isImage: true, pdfUrl: '/devocionais/dezembro.pdf' }
       ]
     }
   ]; // Fim do array modulos
