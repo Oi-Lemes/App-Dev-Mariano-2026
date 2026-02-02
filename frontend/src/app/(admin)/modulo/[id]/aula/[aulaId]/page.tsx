@@ -337,201 +337,199 @@ export default function AulaPage() {
       </nav>
 
       <main className="w-full">
-        {aulaAtual.pdfUrl ? (
-          <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center min-h-screen">
 
-            {/* Erro no Download */}
-            {pdfError && (
-              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
-                <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
-                <button
-                  onClick={() => window.location.reload()}
-                  className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
-                >
-                  Recarregar Página
-                </button>
-              </div>
-            )}
-            {/* ÁREA DE CONTEÚDO (VÍDEO OU PDF) */}
-            <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-amber-100">
-              {isVideo && aulaAtual.videoUrl ? (
-                <div className="relative aspect-video bg-black">
-                  <iframe
-                    src={getFullUrl(aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`)}
-                    className="absolute inset-0 w-full h-full"
-                    allow="autoplay; fullscreen"
-                    allowFullScreen
-                    title={aulaAtual.nome}
-                    frameBorder="0"
-                    scrolling="no"
-                  />
-                </div>
-              ) : aulaAtual.pdfUrl ? (
-                <div className="flex flex-col h-[80vh] bg-stone-100">
-                  {/* GOOGLE DRIVE PDF VIEWER */}
-                  {isGoogleDrive(aulaAtual.pdfUrl) ? (
-                    <div className="w-full h-full flex flex-col">
-                      <iframe
-                        src={aulaAtual.pdfUrl.replace('/view', '/preview')}
-                        className="w-full h-full border-0"
-                        title="Leitura Devocional"
-                        allow="autoplay"
-                      ></iframe>
-                      <div className="p-4 bg-amber-50 text-center text-sm text-stone-600">
-                        Se o PDF não carregar, <a href={aulaAtual.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold underline">clique aqui para abrir</a>.
-                      </div>
-                    </div>
-                  ) : (
-                    /* LOCAL / REACT-PDF VIEWER (FALLBACK) */
-                    <div className="relative flex-1 overflow-auto flex justify-center p-4">
-                      {/* Error in Download */}
-                      {pdfError && (
-                        <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
-                          <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
-                          <button
-                            onClick={() => window.location.reload()}
-                            className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
-                          >
-                            Recarregar Página
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Loading State Overlay (Download Phase) */}
-                      {!pdfBlob && !pdfError && (
-                        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm">
-                          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-                          <p className="text-amber-100 font-serif text-lg animate-pulse mb-2">Baixando devocional...</p>
-                          <div className="w-64 bg-gray-800 rounded-full h-1.5 overflow-hidden border border-white/10">
-                            <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${downloadProgress}%` }}></div>
-                          </div>
-                        </div>
-                      )}
-
-                      {pdfBlob && (
-                        <Document
-                          file={pdfBlob}
-                          onLoadSuccess={onDocumentLoadSuccess}
-                          loading={
-                            <div className="flex flex-col items-center py-20">
-                              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
-                              <span className="text-gray-400">Renderizando...</span>
-                            </div>
-                          }
-                          error={
-                            <div className="flex flex-col items-center justify-center p-8 text-red-500">
-                              <p className="font-bold mb-2">Não foi possível carregar o PDF.</p>
-                              <button onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl!), '_blank')} className="mt-4 px-4 py-2 bg-amber-600 rounded text-white text-sm">
-                                Abrir Externamente
-                              </button>
-                            </div>
-                          }
-                          className="flex flex-col items-center w-full"
-                        >
-                          {Array.from(new Array(numPages), (el, index) => (
-                            <Page
-                              key={`page_${index + 1}`}
-                              pageNumber={index + 1}
-                              width={800} // Valor fixo seguro ou responsivo se tiver hook de window
-                              className="mb-4 shadow-lg min-h-[500px]"
-                              renderTextLayer={false}
-                              renderAnnotationLayer={false}
-                            />
-                          ))}
-                        </Document>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : null}
+        {/* Erro no Download */}
+        {pdfError && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
+            <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
+            <button
+              onClick={() => window.location.reload()}
+              className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+            >
+              Recarregar Página
+            </button>
+          </div>
+        )}
+        {/* ÁREA DE CONTEÚDO (VÍDEO OU PDF) */}
+        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-amber-100">
+          {isVideo && aulaAtual.videoUrl ? (
+            <div className="relative aspect-video bg-black">
+              <iframe
+                src={getFullUrl(aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`)}
+                className="absolute inset-0 w-full h-full"
+                allow="autoplay; fullscreen"
+                allowFullScreen
+                title={aulaAtual.nome}
+                frameBorder="0"
+                scrolling="no"
+              />
             </div>
-
-            {
-              aulaAtual.content ? (
-                <div className="max-w-5xl mx-auto px-4">
-                  <div className="bg-black/40 backdrop-blur-md border border-white/10 p-8 md:p-12 rounded-xl shadow-2xl text-gray-100">
-                    <div className="prose prose-invert prose-lg max-w-none font-light tracking-wide">
-                      <ReactMarkdown
-                        components={{
-                          h1: ({ node, ...props }) => <h1 className="font-serif text-amber-500/90 text-3xl mb-6 border-b border-white/10 pb-4" {...props} />,
-                          h2: ({ node, ...props }) => <h2 className="font-serif text-amber-200/90 text-2xl mt-8 mb-4" {...props} />,
-                          p: ({ node, ...props }) => <p className="leading-loose text-gray-200 mb-4" {...props} />,
-                          strong: ({ node, ...props }) => <strong className="text-amber-100 font-semibold" {...props} />
-                        }}
-                      >
-                        {aulaAtual.content}
-                      </ReactMarkdown>
-                    </div>
+          ) : aulaAtual.pdfUrl ? (
+            <div className="flex flex-col h-[80vh] bg-stone-100">
+              {/* GOOGLE DRIVE PDF VIEWER */}
+              {isGoogleDrive(aulaAtual.pdfUrl) ? (
+                <div className="w-full h-full flex flex-col">
+                  <iframe
+                    src={aulaAtual.pdfUrl.replace('/view', '/preview')}
+                    className="w-full h-full border-0"
+                    title="Leitura Devocional"
+                    allow="autoplay"
+                  ></iframe>
+                  <div className="p-4 bg-amber-50 text-center text-sm text-stone-600">
+                    Se o PDF não carregar, <a href={aulaAtual.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold underline">clique aqui para abrir</a>.
                   </div>
                 </div>
-              ) : aulaAtual.isImage ? (
-                <div className="flex justify-center items-center p-4 bg-gray-800/50">
-                  {/* Imagem do Paper Toy */}
-                  <img
-                    src={previewUrl}
-                    alt={aulaAtual.nome}
-                    className="max-h-[70vh] object-contain rounded-lg shadow-lg"
-                  />
+              ) : (
+                /* LOCAL / REACT-PDF VIEWER (FALLBACK) */
+                <div className="relative flex-1 overflow-auto flex justify-center p-4">
+                  {/* Error in Download */}
+                  {pdfError && (
+                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
+                      <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+                      >
+                        Recarregar Página
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Loading State Overlay (Download Phase) */}
+                  {!pdfBlob && !pdfError && (
+                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+                      <p className="text-amber-100 font-serif text-lg animate-pulse mb-2">Baixando devocional...</p>
+                      <div className="w-64 bg-gray-800 rounded-full h-1.5 overflow-hidden border border-white/10">
+                        <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${downloadProgress}%` }}></div>
+                      </div>
+                    </div>
+                  )}
+
+                  {pdfBlob && (
+                    <Document
+                      file={pdfBlob}
+                      onLoadSuccess={onDocumentLoadSuccess}
+                      loading={
+                        <div className="flex flex-col items-center py-20">
+                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
+                          <span className="text-gray-400">Renderizando...</span>
+                        </div>
+                      }
+                      error={
+                        <div className="flex flex-col items-center justify-center p-8 text-red-500">
+                          <p className="font-bold mb-2">Não foi possível carregar o PDF.</p>
+                          <button onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl!), '_blank')} className="mt-4 px-4 py-2 bg-amber-600 rounded text-white text-sm">
+                            Abrir Externamente
+                          </button>
+                        </div>
+                      }
+                      className="flex flex-col items-center w-full"
+                    >
+                      {Array.from(new Array(numPages), (el, index) => (
+                        <Page
+                          key={`page_${index + 1}`}
+                          pageNumber={index + 1}
+                          width={800} // Valor fixo seguro ou responsivo se tiver hook de window
+                          className="mb-4 shadow-lg min-h-[500px]"
+                          renderTextLayer={false}
+                          renderAnnotationLayer={false}
+                        />
+                      ))}
+                    </Document>
+                  )}
+                </div>
+              )}
+            </div>
+          ) : null}
+        </div>
+
+        {
+          aulaAtual.content ? (
+            <div className="max-w-5xl mx-auto px-4">
+              <div className="bg-black/40 backdrop-blur-md border border-white/10 p-8 md:p-12 rounded-xl shadow-2xl text-gray-100">
+                <div className="prose prose-invert prose-lg max-w-none font-light tracking-wide">
+                  <ReactMarkdown
+                    components={{
+                      h1: ({ node, ...props }) => <h1 className="font-serif text-amber-500/90 text-3xl mb-6 border-b border-white/10 pb-4" {...props} />,
+                      h2: ({ node, ...props }) => <h2 className="font-serif text-amber-200/90 text-2xl mt-8 mb-4" {...props} />,
+                      p: ({ node, ...props }) => <p className="leading-loose text-gray-200 mb-4" {...props} />,
+                      strong: ({ node, ...props }) => <strong className="text-amber-100 font-semibold" {...props} />
+                    }}
+                  >
+                    {aulaAtual.content}
+                  </ReactMarkdown>
+                </div>
+              </div>
+            </div>
+          ) : aulaAtual.isImage ? (
+            <div className="flex justify-center items-center p-4 bg-gray-800/50">
+              {/* Imagem do Paper Toy */}
+              <img
+                src={previewUrl}
+                alt={aulaAtual.nome}
+                className="max-h-[70vh] object-contain rounded-lg shadow-lg"
+              />
+            </div>
+          ) : (
+            /* Lógica Antiga de Vídeo (Fallback) */
+            aulaAtual.videoUrl ? (
+              isVideo ? (
+                <div className="w-full aspect-video bg-transparent">
+                  <iframe
+                    src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
+                    title={aulaAtual.nome}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    frameBorder="0"
+                    scrolling="no"
+                    className="w-full h-full"
+                  ></iframe>
                 </div>
               ) : (
-                /* Lógica Antiga de Vídeo (Fallback) */
-                aulaAtual.videoUrl ? (
-                  isVideo ? (
-                    <div className="w-full aspect-video bg-transparent">
-                      <iframe
-                        src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
-                        title={aulaAtual.nome}
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        frameBorder="0"
-                        scrolling="no"
-                        className="w-full h-full"
-                      ></iframe>
-                    </div>
-                  ) : (
-                    <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
-                  )
-                ) : null
+                <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
               )
-            }
+            ) : null
+          )
+        }
 
-            {/* --- Area de Download para Paper Toys --- */}
-            {aulaAtual.isImage && aulaAtual.downloadUrl && (
-              <div className="flex justify-center mt-8">
-                <button
-                  onClick={handleSecureDownload}
-                  className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
-                >
-                  <DownloadIcon />
-                  BAIXAR ARQUIVO (PDF/IMAGEM)
-                </button>
-              </div>
-            )}
-
-            {isUltimaAulaDoModulo && isModuloConcluido && (
-              <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
-                <h3 className="font-bold text-lg">Parabéns!</h3>
-                <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
-              </div>
-            )}
-
-            {feedbackMessage && (
-              <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
-                <p>{feedbackMessage}</p>
-              </div>
-            )}
-
-            {/* Botão Próximo */}
-            <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
-              <button
-                onClick={handleProximo}
-                disabled={isRedirecting}
-                className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
-              >
-                <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
-                {!isUltimaAulaDoModulo && <ArrowRightIcon />}
-              </button>
-            </div>
-          </main>
+        {/* --- Area de Download para Paper Toys --- */}
+        {aulaAtual.isImage && aulaAtual.downloadUrl && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleSecureDownload}
+              className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
+            >
+              <DownloadIcon />
+              BAIXAR ARQUIVO (PDF/IMAGEM)
+            </button>
           </div>
+        )}
+
+        {isUltimaAulaDoModulo && isModuloConcluido && (
+          <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
+            <h3 className="font-bold text-lg">Parabéns!</h3>
+            <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+          </div>
+        )}
+
+        {feedbackMessage && (
+          <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
+            <p>{feedbackMessage}</p>
+          </div>
+        )}
+
+        {/* Botão Próximo */}
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
+          <button
+            onClick={handleProximo}
+            disabled={isRedirecting}
+            className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+          >
+            <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
+            {!isUltimaAulaDoModulo && <ArrowRightIcon />}
+          </button>
+        </div>
+      </main>
+    </div>
   );
 }
