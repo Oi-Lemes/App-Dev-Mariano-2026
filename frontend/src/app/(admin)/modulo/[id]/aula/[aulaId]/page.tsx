@@ -98,7 +98,7 @@ export default function AulaPage() {
       setAulaAtual(aulaData);
 
       // 3. Buscar Progresso do Usuário
-      const resUser = await fetch(`${backendUrl}/users/me`, {
+      const resUser = await fetch(`${backendUrl}/me`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
@@ -106,6 +106,8 @@ export default function AulaPage() {
         const userData = await resUser.json();
         // Assumindo que userData.aulasConcluidas é um array de IDs
         setAulasConcluidas(userData.aulasConcluidas || []);
+      } else {
+        console.warn(`Erro ao buscar usuário: ${resUser.status}`);
       }
 
     } catch (err: any) {
