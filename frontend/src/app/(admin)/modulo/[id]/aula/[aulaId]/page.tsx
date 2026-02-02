@@ -357,7 +357,7 @@ export default function AulaPage() {
           </div>
         )}
         {/* ÁREA DE CONTEÚDO (VÍDEO OU PDF) */}
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-8 border border-amber-100">
+        <div className={`bg-white rounded-2xl overflow-hidden mb-8 ${aulaAtual.pdfUrl ? '' : 'shadow-xl border border-amber-100'}`}>
           {isVideo && aulaAtual.videoUrl ? (
             <div className="relative aspect-video bg-black">
               <iframe
@@ -390,10 +390,6 @@ export default function AulaPage() {
                     allow="autoplay"
                     onLoad={() => setIsIframeLoading(false)}
                   ></iframe>
-
-                  <div className="p-2 bg-amber-50 text-center text-xs text-stone-500">
-                    <a href={aulaAtual.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Abriu em branco? Clique aqui</a>.
-                  </div>
                 </div>
               ) : (
                 /* LOCAL / REACT-PDF VIEWER (FALLBACK) */
