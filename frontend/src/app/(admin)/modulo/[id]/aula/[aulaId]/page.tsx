@@ -60,6 +60,11 @@ export default function AulaPage() {
     return `${backend}${path.startsWith('/') ? '' : '/'}${path}`;
   };
 
+  const isGoogleDrive = (url: string | null | undefined) => {
+    if (!url) return false;
+    return url.includes('drive.google.com');
+  };
+
   const fetchData = useCallback(async () => {
     try {
       setIsLoading(true);
