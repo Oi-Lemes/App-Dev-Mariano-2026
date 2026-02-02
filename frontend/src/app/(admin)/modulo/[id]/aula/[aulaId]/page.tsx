@@ -154,8 +154,8 @@ const handleProximo = async () => {
 
       router.push('/dashboard');
     }
+  }
   }, 500);
-};
 
 const isVideo = aulaAtual?.videoUrl?.includes('wistia') || aulaAtual?.videoUrl?.includes('youtube');
 
