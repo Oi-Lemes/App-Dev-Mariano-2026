@@ -107,6 +107,11 @@ export default function AulaPage() {
   }, [moduleId, router]);
 
   // Responsive Width Logic with ResizeObserver
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
+    setNumPages(numPages);
+    setIsLoadingPdf(false);
+  };
+
   useEffect(() => {
     const container = document.getElementById('pdf-wrapper');
     if (!container) return;
