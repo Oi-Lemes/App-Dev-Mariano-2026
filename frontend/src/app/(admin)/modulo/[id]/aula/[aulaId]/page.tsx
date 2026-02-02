@@ -46,6 +46,7 @@ export default function AulaPage() {
   const [isLoadingPdf, setIsLoadingPdf] = useState(false);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
+  const [pdfError, setPdfError] = useState<string | null>(null);
 
   const isConcluida = aulasConcluidas.includes(aulaId);
   const aulaIndex = modulo?.aulas?.findIndex((a: any) => a.id === aulaId) ?? -1;
@@ -140,6 +141,7 @@ export default function AulaPage() {
   useEffect(() => {
     if (aulaId && aulaAtual?.pdfUrl) {
       setIsLoadingPdf(true);
+      setPdfError(null); // Reset error on new download attempt
       setDownloadProgress(0);
       setPdfBlob(null);
 
@@ -161,13 +163,15 @@ export default function AulaPage() {
           setPdfBlob(xhr.response);
           // Loading state stays true until Document renders first page (onDocumentLoadSuccess)
         } else {
-          console.error("Erro ao baixar PDF");
+          console.error("Erro ao baixar PDF:", xhr.status);
+          setPdfError("Falha ao baixar o arquivo PDF. Verifique sua conexão.");
           setIsLoadingPdf(false);
         }
       };
 
       xhr.onerror = () => {
-        console.error("Erro XHR");
+        console.error("Erro de rede XHR");
+        setPdfError("Erro de rede ao tentar baixar o PDF.");
         setIsLoadingPdf(false);
       };
 
@@ -328,8 +332,21 @@ export default function AulaPage() {
         {aulaAtual.pdfUrl ? (
           <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center min-h-screen">
 
+            {/* Erro no Download */}
+            {pdfError && (
+              <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
+                <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
+                >
+                  Recarregar Página
+                </button>
+              </div>
+            )}
+
             {/* Loading State Overlay (Download Phase) */}
-            {(!pdfBlob) && (
+            {!pdfBlob && !pdfError && (
               <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
                 <p className="text-amber-100 font-serif text-lg animate-pulse mb-2">Baixando devocional...</p>
@@ -347,6 +364,7 @@ export default function AulaPage() {
                 onLoadError={(error) => {
                   console.error("Erro ao renderizar PDF:", error);
                   setIsLoadingPdf(false);
+                  setPdfError("O arquivo PDF está corrompido ou é inválido.");
                 }}
                 loading={
                   <div className="flex flex-col items-center py-20">
@@ -357,7 +375,6 @@ export default function AulaPage() {
                 error={
                   <div className="text-red-400 p-8 text-center bg-gray-800 rounded-lg mt-10">
                     <p className="text-xl font-bold mb-2">❌ Erro ao abrir o PDF</p>
-                    <p className="text-sm text-gray-400 mb-4">O arquivo pode estar corrompido ou incompatível.</p>
                     <button onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl), '_blank')} className="px-4 py-2 bg-amber-600 rounded text-white text-sm">
                       Tentar abrir externamente
                     </button>
