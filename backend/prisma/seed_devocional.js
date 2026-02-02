@@ -44,15 +44,27 @@ async function main() {
 
     let ordemBase = 1; // Começa antes dos módulos da Quaresma
 
+    const driveLinks = {
+        'Janeiro': 'https://drive.google.com/file/d/1jwmAgr6pRp7p5b-UXiVRFwNC558wPc4K/preview',
+        'Fevereiro': 'https://drive.google.com/file/d/1WIVpikwireCfxPJ4ETp7wiSl0JjuFm9T/preview',
+        'Março': 'https://drive.google.com/file/d/1Cw_oo2jXVGfhdIORb3oeVCuN2CJFs9Io/preview',
+        'Abril': 'https://drive.google.com/file/d/1rify9u_gkqrXukndTWWkf-PsLkxhkdUr/preview',
+        'Maio': 'https://drive.google.com/file/d/1pjSnyFTsKrNWQgqTQT_tFknHujq6PisC/preview',
+        'Junho': 'https://drive.google.com/file/d/1h__Fx2N5HAy0dDmDqsIkRvUVVk54tySa/preview',
+        'Julho': 'https://drive.google.com/file/d/1gaWY_UV20xEV5aF46cn-_BMAChsaqRgI/preview',
+        'Agosto': 'https://drive.google.com/file/d/18EYOQX8XsiZ6VC5lEIb_Qs9BZEC3BlFI/preview',
+        'Setembro': 'https://drive.google.com/file/d/1tqqdLdAyFM0ZBDYKdwAfiWPOlka0-xry/preview',
+        'Outubro': '', // Missing
+        'Novembro': 'https://drive.google.com/file/d/1mOy4CDIZ61xgAVrn7xJFu4A2j8PwGa3c/preview',
+        'Dezembro': 'https://drive.google.com/file/d/1uwUgxewGtnwNaDo0P1LhEIkQ7GArHsUL/preview'
+    };
+
     for (const month of months) {
         const filenameBase = normalize(month);
-        const pdfUrl = `/devocionais/${filenameBase}.pdf`;
+        // Use Drive Link if available, otherwise fallback to local (or empty)
+        let pdfUrl = driveLinks[month] || `/devocionais/${filenameBase}.pdf`;
         const imgUrl = `/img/devocionais/${filenameBase}.png`;
 
-        // Verifica se o mês é Outubro (que estava na pasta imgs mas não na cleaned)
-        // Se não tiver PDF, pulamos ou criamos só placeholder? 
-        // Pelos logs: outubto tem imagem mas pdf não apareceu na lista, verifiquei "cleaned" e tinha 11 arquivos.
-        // Vou criar mesmo assim, se o PDF faltar o frontend avisa.
 
         const modulo = await prisma.modulo.create({
             data: {
