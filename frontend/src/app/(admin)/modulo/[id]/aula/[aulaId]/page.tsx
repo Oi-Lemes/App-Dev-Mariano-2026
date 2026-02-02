@@ -78,7 +78,10 @@ export default function AulaPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!resModulo.ok) throw new Error('Módulo não encontrado');
+      if (!resModulo.ok) {
+        console.error(`Erro ao buscar módulo: ${resModulo.status}`);
+        throw new Error(`Módulo não encontrado (Status: ${resModulo.status})`);
+      }
       const moduloData = await resModulo.json();
       setModulo(moduloData);
 
@@ -87,7 +90,10 @@ export default function AulaPage() {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
-      if (!resAula.ok) throw new Error('Aula não encontrada');
+      if (!resAula.ok) {
+        console.error(`Erro ao buscar aula ${aulaId}: ${resAula.status}`);
+        throw new Error(`Aula não encontrada (ID: ${aulaId}, Status: ${resAula.status})`);
+      }
       const aulaData = await resAula.json();
       setAulaAtual(aulaData);
 
@@ -103,7 +109,7 @@ export default function AulaPage() {
       }
 
     } catch (err: any) {
-      console.error(err);
+      console.error("Fetch error:", err);
       setError(err.message || 'Erro ao carregar dados');
     } finally {
       setIsLoading(false);
