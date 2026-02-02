@@ -173,6 +173,22 @@ const uploadsPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
 
+// DEBUG: Check files in production
+app.get('/debug-files', (req, res) => {
+    const devPath = path.join(__dirname, 'uploads/devocionais');
+    if (fs.existsSync(devPath)) {
+        const files = fs.readdirSync(devPath);
+        res.json({
+            path: devPath,
+            exists: true,
+            files: files,
+            test_url: '/devocionais/' + (files[0] || '')
+        });
+    } else {
+        res.json({ path: devPath, exists: false, files: [] });
+    }
+});
+
 // --- ROTA DE DOWNLOAD FORÇADO ---
 app.get('/download/:category/:subfolder/:file', (req, res) => {
     const { category, subfolder, file } = req.params;
