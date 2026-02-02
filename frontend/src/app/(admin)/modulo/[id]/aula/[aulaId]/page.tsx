@@ -323,20 +323,24 @@ export default function AulaPage() {
         {aulaAtual.pdfUrl ? (
           <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center pb-8 min-h-[50vh]">
 
+            {/* Loading State Overlay (Download Phase) */}
+            {(!pdfBlob || isLoadingPdf) && (
+              <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm rounded-xl">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+                <p className="text-amber-100 font-serif text-lg animate-pulse mb-2">Carregando seu devocional...</p>
+                <div className="w-64 bg-gray-800 rounded-full h-1.5 overflow-hidden border border-white/10">
+                  <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${downloadProgress}%` }}></div>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">{Math.round(downloadProgress)}%</p>
+              </div>
+            )}
+
             {/* React PDF Viewer */}
             {pdfBlob && (
               <Document
                 file={pdfBlob}
                 onLoadSuccess={onDocumentLoadSuccess}
-                loading={
-                  <div className="flex flex-col items-center py-10 h-[50vh] justify-center text-center">
-                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
-                    <span className="text-gray-400">Preparando páginas...</span>
-                    <div className="w-48 bg-gray-800 rounded-full h-1 mt-4 overflow-hidden">
-                      <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${downloadProgress}%` }}></div>
-                    </div>
-                  </div>
-                }
+                loading={null} // Loading is handled by overlay above
                 error={<div className="text-red-400 p-8 text-center">❌ Erro ao renderizar. <br />Tente recarregar ou usar o botão "Salvar PDF".</div>}
                 className="flex flex-col items-center w-full"
               >
