@@ -99,6 +99,22 @@ export default function AulaPage() {
       setPdfObjectUrl(null);
 
       const url = getFullUrl(aulaAtual.pdfUrl);
+      // Responsive Width Logic with ResizeObserver
+      useEffect(() => {
+        const container = document.getElementById('pdf-wrapper');
+        if (!container) return;
+
+        const observer = new ResizeObserver((entries) => {
+          for (let entry of entries) {
+            // Adjust width to be slightly smaller than container to prevent any horizontal scroll
+            // Math.floor to avoid subpixel rendering issues + 2px buffer
+            setPageWidth(Math.floor(entry.contentRect.width - 2));
+          }
+        });
+
+        observer.observe(container);
+        return () => observer.disconnect();
+      }, [isLoadingPdf]); // Re-attach if loading state changes
       const xhr = new XMLHttpRequest();
 
       xhr.open('GET', url, true);
