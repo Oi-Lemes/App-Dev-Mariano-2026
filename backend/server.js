@@ -764,6 +764,21 @@ app.get('/modulos/:id', authenticateToken, async (req, res) => {
     }
 });
 
+// --- ROTA DE AULA INDIVIDUAL (FIX) ---
+app.get('/aulas/:id', authenticateToken, async (req, res) => {
+    const id = parseInt(req.params.id);
+    try {
+        const aula = await prisma.aula.findUnique({
+            where: { id }
+        });
+        if (!aula) return res.status(404).json({ error: 'Aula não encontrada.' });
+        res.json(aula);
+    } catch (e) {
+        console.error("Erro ao buscar aula:", e);
+        res.status(500).json({ error: 'Erro ao buscar aula' });
+    }
+});
+
 app.get('/progresso', authenticateToken, async (req, res) => {
     const progressos = await prisma.progresso.findMany({
         where: { userId: req.user.id, concluida: true },
