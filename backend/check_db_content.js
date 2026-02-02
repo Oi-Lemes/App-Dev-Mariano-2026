@@ -13,6 +13,9 @@ async function main() {
             if (m.aulas.length > 0) {
                 m.aulas.forEach(a => {
                     console.log(`   - LESSON: [${a.id}] ${a.nome}`);
+                    console.log(`     isImage: ${a.isImage}`);
+                    console.log(`     videoUrl: ${a.videoUrl}`);
+                    console.log(`     pdfUrl: ${a.pdfUrl}`);
                 });
             } else {
                 console.log("   (No lessons)");

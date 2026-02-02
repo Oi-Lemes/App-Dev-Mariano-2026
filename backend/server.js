@@ -172,6 +172,7 @@ app.use(express.json());
 const uploadsPath = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadsPath)) fs.mkdirSync(uploadsPath, { recursive: true });
 app.use('/uploads', express.static(uploadsPath));
+app.use('/img', express.static(path.join(uploadsPath, 'img'))); // Fix for legacy image paths
 
 // DEBUG: Check files in production
 app.get('/debug-files', (req, res) => {
