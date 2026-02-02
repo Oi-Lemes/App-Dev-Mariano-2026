@@ -47,7 +47,23 @@ export default function AulaPage() {
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [pdfError, setPdfError] = useState<string | null>(null);
-  const [isIframeLoading, setIsIframeLoading] = useState(true); // Novo state para o iframe public
+  const [isIframeLoading, setIsIframeLoading] = useState(true);
+  const [iframeLoaded, setIframeLoaded] = useState(false);
+  const [minTimeElapsed, setMinTimeElapsed] = useState(false);
+
+  useEffect(() => {
+    // Garante tempo mínimo de 7 segundos para o loading
+    const timer = setTimeout(() => {
+      setMinTimeElapsed(true);
+    }, 7000);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (iframeLoaded && minTimeElapsed) {
+      setIsIframeLoading(false);
+    }
+  }, [iframeLoaded, minTimeElapsed]);
 
   const isConcluida = aulasConcluidas.includes(aulaId);
   const aulaIndex = modulo?.aulas?.findIndex((a: any) => a.id === aulaId) ?? -1;
