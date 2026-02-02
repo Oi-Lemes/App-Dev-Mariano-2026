@@ -423,8 +423,8 @@ export default function AulaPage() {
               {/* NATIVE PDF VIEWER (React-PDF) */}
               <div className="relative flex-1 overflow-auto flex justify-center p-0 md:p-4 bg-stone-100">
 
-                {pdfError && !isIframeLoading && (
-                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
+                {pdfError && (
+                  <div className="absolute inset-0 z-50 flex flex-col items-center justify-center p-4 bg-gray-900">
                     <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
                     <button onClick={() => window.location.reload()} className="px-6 py-3 bg-amber-600 rounded-lg text-white">Tentar Novamente</button>
                   </div>
