@@ -6,6 +6,7 @@ import ReactMarkdown from 'react-markdown';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
+import { ArrowRight as ArrowRightIcon, Download as DownloadIcon } from 'lucide-react';
 
 // Configuração do Worker do PDF.js
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.4.168/build/pdf.worker.min.js`;
