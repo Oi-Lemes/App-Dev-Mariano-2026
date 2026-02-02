@@ -393,18 +393,18 @@ export default function AulaPage() {
                 <div className="w-full h-full flex flex-col relative">
                   {/* Loading Overlay for Iframe */}
                   {isIframeLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-stone-100">
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0a0a0a]">
                       <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
-                      <p className="text-amber-800 font-serif animate-pulse">Carregando devocional...</p>
+                      <p className="text-amber-100 font-serif animate-pulse">Carregando devocional...</p>
                     </div>
                   )}
 
                   <iframe
                     src={aulaAtual.pdfUrl.replace('/view', '/preview')}
-                    className={`w-full h-full border-0 transition-opacity duration-500 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
+                    className={`w-full h-full border-0 transition-opacity duration-1000 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
                     title="Leitura Devocional"
                     allow="autoplay"
-                    onLoad={() => setIsIframeLoading(false)}
+                    onLoad={() => setIframeLoaded(true)}
                   ></iframe>
                 </div>
               ) : (
