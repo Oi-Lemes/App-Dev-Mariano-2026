@@ -63,6 +63,19 @@ export default function AulaPage() {
   const [feedbackMessage, setFeedbackMessage] = useState<string | null>(null);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Constrói URL completa se for local
+  const getFullUrl = (url?: string) => {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://app-dev-mariano-2026.onrender.com'}${url}`;
+  };
+
+  const aulaAtual = modulo?.aulas.find(a => a.id.toString() === aulaId);
+  const aulaIndex = modulo?.aulas.findIndex(a => a.id.toString() === aulaId) ?? -1;
+  const isUltimaAulaDoModulo = aulaIndex !== -1 && aulaIndex === (modulo?.aulas.length ?? 0) - 1;
+  const isConcluida = aulaAtual ? aulasConcluidas.includes(aulaAtual.id) : false;
+  const isModuloConcluido = modulo ? modulo.aulas.every(a => aulasConcluidas.includes(a.id)) : false;
+
   const fetchData = useCallback(async () => {
     setError(null);
     const token = localStorage.getItem('token');
@@ -170,11 +183,7 @@ export default function AulaPage() {
     };
   }, [fetchData]);
 
-  const aulaAtual = modulo?.aulas.find(a => a.id.toString() === aulaId);
-  const aulaIndex = modulo?.aulas.findIndex(a => a.id.toString() === aulaId) ?? -1;
-  const isUltimaAulaDoModulo = aulaIndex !== -1 && aulaIndex === (modulo?.aulas.length ?? 0) - 1;
-  const isConcluida = aulaAtual ? aulasConcluidas.includes(aulaAtual.id) : false;
-  const isModuloConcluido = modulo ? modulo.aulas.every(a => aulasConcluidas.includes(a.id)) : false;
+
 
   const handleMarcarComoConcluida = async () => {
     if (!aulaAtual) return;
@@ -234,12 +243,7 @@ export default function AulaPage() {
 
   const isVideo = aulaAtual?.videoUrl?.includes('wistia') || aulaAtual?.videoUrl?.includes('youtube');
 
-  // Constrói URL completa se for local
-  const getFullUrl = (url?: string) => {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `${process.env.NEXT_PUBLIC_BACKEND_URL || 'https://app-dev-mariano-2026.onrender.com'}${url}`;
-  };
+
 
   const previewUrl = getFullUrl(aulaAtual?.videoUrl ? encodeURI(aulaAtual.videoUrl) : '');
 
