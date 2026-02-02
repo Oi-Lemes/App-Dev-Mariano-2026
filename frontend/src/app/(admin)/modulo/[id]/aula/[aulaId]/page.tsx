@@ -171,13 +171,26 @@ export default function AulaPage() {
   useEffect(() => {
     if (aulaId && aulaAtual?.pdfUrl) {
       setIsLoadingPdf(true);
-      setPdfError(null); // Reset error on new download attempt
+      setPdfError(null);
       setDownloadProgress(0);
       setPdfBlob(null);
+      setIframeLoaded(false); // Reset display load state
+      setMinTimeElapsed(false); // Reset timer
 
-      const url = getFullUrl(aulaAtual.pdfUrl);
+      // Restart timer
+      const timer = setTimeout(() => {
+        setMinTimeElapsed(true);
+      }, 7000);
+
+      let url = getFullUrl(aulaAtual.pdfUrl);
+
+      // USE PROXY FOR DRIVE LINKS
+      if (isGoogleDrive(aulaAtual.pdfUrl)) {
+        const backend = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://app-dev-mariano-2026.onrender.com';
+        url = `${backend}/proxy-pdf?url=${encodeURIComponent(aulaAtual.pdfUrl)}`;
+      }
+
       const xhr = new XMLHttpRequest();
-
       xhr.open('GET', url, true);
       xhr.responseType = 'blob';
 
@@ -191,7 +204,9 @@ export default function AulaPage() {
       xhr.onload = () => {
         if (xhr.status === 200) {
           setPdfBlob(xhr.response);
-          // Loading state stays true until Document renders first page (onDocumentLoadSuccess)
+          // PDF downloaded, but Document still needs to render.
+          // isLoadingPdf tracks download. Render loading is tracked by iframeLoaded/minTimeElapsed.
+          setIsLoadingPdf(false);
         } else {
           console.error("Erro ao baixar PDF:", xhr.status);
           setPdfError("Falha ao baixar o arquivo PDF. Verifique sua conexão.");
@@ -209,6 +224,7 @@ export default function AulaPage() {
 
       return () => {
         xhr.abort();
+        clearTimeout(timer);
       };
     } else {
       setIsLoadingPdf(false);
@@ -388,86 +404,55 @@ export default function AulaPage() {
             </div>
           ) : aulaAtual.pdfUrl ? (
             <div className="flex flex-col h-[85vh] bg-stone-100 relative">
-              {/* GOOGLE DRIVE PDF VIEWER */}
-              {isGoogleDrive(aulaAtual.pdfUrl) ? (
-                <div className="w-full h-full flex flex-col relative">
-                  {/* Loading Overlay for Iframe */}
-                  {isIframeLoading && (
-                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-[#0a0a0a]">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
-                      <p className="text-amber-100 font-serif animate-pulse">Carregando devocional...</p>
-                    </div>
-                  )}
 
-                  <iframe
-                    src={aulaAtual.pdfUrl.replace('/view', '/preview')}
-                    className={`w-full h-full border-0 transition-opacity duration-1000 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
-                    title="Leitura Devocional"
-                    allow="autoplay"
-                    onLoad={() => setIframeLoaded(true)}
-                  ></iframe>
-                </div>
-              ) : (
-                /* LOCAL / REACT-PDF VIEWER (FALLBACK) */
-                <div className="relative flex-1 overflow-auto flex justify-center p-4">
-                  {/* Error in Download */}
-                  {pdfError && (
-                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
-                      <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="px-6 py-3 bg-amber-600 hover:bg-amber-500 text-white rounded-lg transition-colors"
-                      >
-                        Recarregar Página
-                      </button>
-                    </div>
-                  )}
+              {/* Unified Loading Overlay (7s Delay + Download + Render) */}
+              {isIframeLoading && (
+                <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[#0a0a0a]">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
+                  <p className="text-amber-100 font-serif animate-pulse">Carregando devocional...</p>
 
-                  {/* Loading State Overlay (Download Phase) */}
-                  {!pdfBlob && !pdfError && (
-                    <div className="absolute inset-0 z-20 flex flex-col items-center justify-center p-4 bg-gray-900/90 backdrop-blur-sm">
-                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-500 mb-4"></div>
-                      <p className="text-amber-100 font-serif text-lg animate-pulse mb-2">Baixando devocional...</p>
-                      <div className="w-64 bg-gray-800 rounded-full h-1.5 overflow-hidden border border-white/10">
-                        <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${downloadProgress}%` }}></div>
-                      </div>
+                  {/* Barra de Progresso do Download */}
+                  {downloadProgress > 0 && downloadProgress < 100 && (
+                    <div className="w-64 bg-gray-800 rounded-full h-1.5 mt-4 overflow-hidden border border-white/10">
+                      <div className="bg-amber-500 h-full transition-all duration-300 ease-out" style={{ width: `${downloadProgress}%` }}></div>
                     </div>
-                  )}
-
-                  {pdfBlob && (
-                    <Document
-                      file={pdfBlob}
-                      onLoadSuccess={onDocumentLoadSuccess}
-                      loading={
-                        <div className="flex flex-col items-center py-20">
-                          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
-                          <span className="text-gray-400">Renderizando...</span>
-                        </div>
-                      }
-                      error={
-                        <div className="flex flex-col items-center justify-center p-8 text-red-500">
-                          <p className="font-bold mb-2">Não foi possível carregar o PDF.</p>
-                          <button onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl!), '_blank')} className="mt-4 px-4 py-2 bg-amber-600 rounded text-white text-sm">
-                            Abrir Externamente
-                          </button>
-                        </div>
-                      }
-                      className="flex flex-col items-center w-full"
-                    >
-                      {Array.from(new Array(numPages), (el, index) => (
-                        <Page
-                          key={`page_${index + 1}`}
-                          pageNumber={index + 1}
-                          width={800} // Valor fixo seguro ou responsivo se tiver hook de window
-                          className="mb-4 shadow-lg min-h-[500px]"
-                          renderTextLayer={false}
-                          renderAnnotationLayer={false}
-                        />
-                      ))}
-                    </Document>
                   )}
                 </div>
               )}
+
+              {/* NATIVE PDF VIEWER (React-PDF) */}
+              <div className="relative flex-1 overflow-auto flex justify-center p-4 bg-stone-100">
+
+                {pdfError && !isIframeLoading && (
+                  <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
+                    <div className="text-red-400 text-xl font-bold mb-4">⚠️ {pdfError}</div>
+                    <button onClick={() => window.location.reload()} className="px-6 py-3 bg-amber-600 rounded-lg text-white">Tentar Novamente</button>
+                  </div>
+                )}
+
+                {pdfBlob && (
+                  <Document
+                    file={pdfBlob}
+                    onLoadSuccess={(data) => {
+                      onDocumentLoadSuccess(data);
+                      setIframeLoaded(true); // Signal content is ready
+                    }}
+                    className="flex flex-col items-center w-full"
+                    loading={null} // Loading handled by overlay
+                  >
+                    {Array.from(new Array(numPages), (el, index) => (
+                      <Page
+                        key={`page_${index + 1}`}
+                        pageNumber={index + 1}
+                        width={pageWidth > 800 ? 800 : pageWidth * 0.9}
+                        className="mb-6 shadow-2xl"
+                        renderTextLayer={false}
+                        renderAnnotationLayer={false}
+                      />
+                    ))}
+                  </Document>
+                )}
+              </div>
             </div>
           ) : null}
         </div>

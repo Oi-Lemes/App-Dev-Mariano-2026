@@ -225,6 +225,34 @@ app.get('/download/*', (req, res) => {
     }
 });
 
+// --- GOOGLE DRIVE PDF PROXY ---
+app.get('/proxy-pdf', async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).send('URL missing');
+
+    try {
+        // Extract ID from Drive URL
+        const fileIdMatch = url.match(/[-\w]{25,}/);
+        if (!fileIdMatch) return res.status(400).send('Invalid Drive URL');
+        const fileId = fileIdMatch[0];
+
+        // Using 'uc?export=download' logic directly
+        const driveUrl = `https://drive.google.com/uc?export=download&id=${fileId}`;
+
+        const response = await axios({
+            url: driveUrl,
+            method: 'GET',
+            responseType: 'stream'
+        });
+
+        res.setHeader('Content-Type', 'application/pdf');
+        response.data.pipe(res);
+    } catch (error) {
+        console.error('Proxy Error:', error.message);
+        res.status(500).send('Error fetching PDF');
+    }
+});
+
 const allowedOrigins = [
     'https://www.saberesdafloresta.site',
     'http://localhost:3000',
