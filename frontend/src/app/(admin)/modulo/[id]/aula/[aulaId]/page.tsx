@@ -47,6 +47,7 @@ export default function AulaPage() {
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [pdfError, setPdfError] = useState<string | null>(null);
+  const [isIframeLoading, setIsIframeLoading] = useState(true); // Novo state para o iframe public
 
   const isConcluida = aulasConcluidas.includes(aulaId);
   const aulaIndex = modulo?.aulas?.findIndex((a: any) => a.id === aulaId) ?? -1;
@@ -370,18 +371,28 @@ export default function AulaPage() {
               />
             </div>
           ) : aulaAtual.pdfUrl ? (
-            <div className="flex flex-col h-[80vh] bg-stone-100">
+            <div className="flex flex-col h-[85vh] bg-stone-100 relative">
               {/* GOOGLE DRIVE PDF VIEWER */}
               {isGoogleDrive(aulaAtual.pdfUrl) ? (
-                <div className="w-full h-full flex flex-col">
+                <div className="w-full h-full flex flex-col relative">
+                  {/* Loading Overlay for Iframe */}
+                  {isIframeLoading && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-stone-100">
+                      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mb-4"></div>
+                      <p className="text-amber-800 font-serif animate-pulse">Carregando devocional...</p>
+                    </div>
+                  )}
+
                   <iframe
                     src={aulaAtual.pdfUrl.replace('/view', '/preview')}
-                    className="w-full h-full border-0"
+                    className={`w-full h-full border-0 transition-opacity duration-500 ${isIframeLoading ? 'opacity-0' : 'opacity-100'}`}
                     title="Leitura Devocional"
                     allow="autoplay"
+                    onLoad={() => setIsIframeLoading(false)}
                   ></iframe>
-                  <div className="p-4 bg-amber-50 text-center text-sm text-stone-600">
-                    Se o PDF não carregar, <a href={aulaAtual.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-amber-700 font-bold underline">clique aqui para abrir</a>.
+
+                  <div className="p-2 bg-amber-50 text-center text-xs text-stone-500">
+                    <a href={aulaAtual.pdfUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">Abriu em branco? Clique aqui</a>.
                   </div>
                 </div>
               ) : (
