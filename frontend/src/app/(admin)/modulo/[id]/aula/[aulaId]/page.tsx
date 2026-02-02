@@ -407,74 +407,75 @@ export default function AulaPage() {
                   </ReactMarkdown>
                 </div>
               </div>
-              ) : aulaAtual.isImage ? (
-              <div className="flex justify-center items-center p-4 bg-gray-800/50">
-                {/* Imagem do Paper Toy */}
-                <img
-                  src={previewUrl}
-                  alt={aulaAtual.nome}
-                  className="max-h-[70vh] object-contain rounded-lg shadow-lg"
-                />
-              </div>
-              ) : (
-              /* Lógica Antiga de Vídeo (Fallback) */
-              aulaAtual.videoUrl ? (
+            </div>
+          ) : aulaAtual.isImage ? (
+            <div className="flex justify-center items-center p-4 bg-gray-800/50">
+              {/* Imagem do Paper Toy */}
+              <img
+                src={previewUrl}
+                alt={aulaAtual.nome}
+                className="max-h-[70vh] object-contain rounded-lg shadow-lg"
+              />
+            </div>
+          ) : (
+            /* Lógica Antiga de Vídeo (Fallback) */
+            aulaAtual.videoUrl ? (
               isVideo ? (
-              <div className="w-full aspect-video bg-transparent">
-                <iframe
-                  src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
-                  title={aulaAtual.nome}
-                  allow="autoplay; fullscreen; picture-in-picture"
-                  frameBorder="0"
-                  scrolling="no"
-                  className="w-full h-full"
-                ></iframe>
-              </div>
+                <div className="w-full aspect-video bg-transparent">
+                  <iframe
+                    src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
+                    title={aulaAtual.nome}
+                    allow="autoplay; fullscreen; picture-in-picture"
+                    frameBorder="0"
+                    scrolling="no"
+                    className="w-full h-full"
+                  ></iframe>
+                </div>
               ) : (
-              <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
+                <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
               )
-              ) : null
-              )
-           }
+            ) : null
+          )
+        }
 
-              {/* --- Area de Download para Paper Toys --- */}
-              {aulaAtual.isImage && aulaAtual.downloadUrl && (
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={handleSecureDownload}
-                    className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
-                  >
-                    <DownloadIcon />
-                    BAIXAR ARQUIVO (PDF/IMAGEM)
-                  </button>
-                </div>
-              )}
+        {/* --- Area de Download para Paper Toys --- */}
+        {aulaAtual.isImage && aulaAtual.downloadUrl && (
+          <div className="flex justify-center mt-8">
+            <button
+              onClick={handleSecureDownload}
+              className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
+            >
+              <DownloadIcon />
+              BAIXAR ARQUIVO (PDF/IMAGEM)
+            </button>
+          </div>
+        )}
 
-              {isUltimaAulaDoModulo && isModuloConcluido && (
-                <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
-                  <h3 className="font-bold text-lg">Parabéns!</h3>
-                  <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
-                </div>
-              )}
+        {isUltimaAulaDoModulo && isModuloConcluido && (
+          <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
+            <h3 className="font-bold text-lg">Parabéns!</h3>
+            <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+          </div>
+        )}
 
-              {feedbackMessage && (
-                <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
-                  <p>{feedbackMessage}</p>
-                </div>
-              )}
+        {feedbackMessage && (
+          <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
+            <p>{feedbackMessage}</p>
+          </div>
+        )}
 
-              {/* Botão Próximo */}
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
-                <button
-                  onClick={handleProximo}
-                  disabled={isRedirecting}
-                  className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
-                >
-                  <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
-                  {!isUltimaAulaDoModulo && <ArrowRightIcon />}
-                </button>
-              </div>
-            </main>
+        {/* Botão Próximo */}
+        <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
+          <button
+            onClick={handleProximo}
+            disabled={isRedirecting}
+            className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+          >
+            <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
+            {!isUltimaAulaDoModulo && <ArrowRightIcon />}
+          </button>
+        </div>
+      </main>
     </div>
   );
 }
