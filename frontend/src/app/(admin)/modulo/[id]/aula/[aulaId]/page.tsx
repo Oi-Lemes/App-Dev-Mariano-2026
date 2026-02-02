@@ -435,42 +435,36 @@ export default function AulaPage() {
               )
               ) : null
               )
-        }
-
+           }
 
               {/* --- Area de Download para Paper Toys --- */}
-              {
-                aulaAtual.isImage && aulaAtual.downloadUrl && (
-                  <div className="flex justify-center">
-                    <button
-                      onClick={handleSecureDownload}
-                      className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
-                    >
-                      <DownloadIcon />
-                      BAIXAR ARQUIVO (PDF/IMAGEM)
-                    </button>
-                  </div>
-                )
-              }
+              {aulaAtual.isImage && aulaAtual.downloadUrl && (
+                <div className="flex justify-center mt-8">
+                  <button
+                    onClick={handleSecureDownload}
+                    className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
+                  >
+                    <DownloadIcon />
+                    BAIXAR ARQUIVO (PDF/IMAGEM)
+                  </button>
+                </div>
+              )}
 
-              {
-                isUltimaAulaDoModulo && isModuloConcluido && (
-                  <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center">
-                    <h3 className="font-bold text-lg">Parabéns!</h3>
-                    <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
-                  </div>
-                )
-              }
-              {
-                feedbackMessage && (
-                  <div className={`px-4 py-3 rounded-lg text-center ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
-                    <p>{feedbackMessage}</p>
-                  </div>
-                )
-              }
+              {isUltimaAulaDoModulo && isModuloConcluido && (
+                <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
+                  <h3 className="font-bold text-lg">Parabéns!</h3>
+                  <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+                </div>
+              )}
 
-              {/* Botão Manual Removido para forçar progresso via Download */}
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
+              {feedbackMessage && (
+                <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
+                  <p>{feedbackMessage}</p>
+                </div>
+              )}
+
+              {/* Botão Próximo */}
+              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
                 <button
                   onClick={handleProximo}
                   disabled={isRedirecting}
@@ -480,7 +474,7 @@ export default function AulaPage() {
                   {!isUltimaAulaDoModulo && <ArrowRightIcon />}
                 </button>
               </div>
-            </main >
-    </div >
+            </main>
+    </div>
   );
 }
