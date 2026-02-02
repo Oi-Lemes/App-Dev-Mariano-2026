@@ -321,50 +321,49 @@ export default function AulaPage() {
       <main className="space-y-6">
 
         {aulaAtual.pdfUrl ? (
-          {/* Simple Wrapper without borders on mobile */ }
-          < div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center pb-8 min-h-[50vh]">
+          <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center pb-8 min-h-[50vh]">
 
-        {/* React PDF Viewer */}
-        {pdfBlob && (
-          <Document
-            file={pdfBlob}
-            onLoadSuccess={onDocumentLoadSuccess}
-            loading={
-              <div className="flex flex-col items-center py-10 h-[50vh] justify-center text-center">
-                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
-                <span className="text-gray-400">Preparando páginas...</span>
-                <div className="w-48 bg-gray-800 rounded-full h-1 mt-4 overflow-hidden">
-                  <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${downloadProgress}%` }}></div>
-                </div>
-              </div>
-            }
-            error={<div className="text-red-400 p-8 text-center">❌ Erro ao renderizar. <br />Tente recarregar ou usar o botão "Salvar PDF".</div>}
-            className="flex flex-col items-center w-full"
-          >
-            {numPages && Array.from(new Array(numPages), (el, index) => (
-              <div key={`page_${index + 1}`} className="w-full mb-1 sm:mb-4 shadow-lg relative bg-gray-800 min-h-[300px]">
-                {/* Lazy loading wrapper could go here, but rely on Page loading prop first */}
-                <Page
-                  key={`page_${index + 1}`}
-                  pageNumber={index + 1}
-                  width={pageWidth}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                  canvasBackground="transparent"
-                  className="w-full mix-blend-normal"
-                  loading={
-                    <div className="aspect-[2/3] w-full bg-gray-800/50 animate-pulse flex items-center justify-center h-full">
-                      <span className="text-xs text-gray-500">Carregando pág. {index + 1}...</span>
+            {/* React PDF Viewer */}
+            {pdfBlob && (
+              <Document
+                file={pdfBlob}
+                onLoadSuccess={onDocumentLoadSuccess}
+                loading={
+                  <div className="flex flex-col items-center py-10 h-[50vh] justify-center text-center">
+                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
+                    <span className="text-gray-400">Preparando páginas...</span>
+                    <div className="w-48 bg-gray-800 rounded-full h-1 mt-4 overflow-hidden">
+                      <div className="bg-amber-500 h-full transition-all duration-300" style={{ width: `${downloadProgress}%` }}></div>
                     </div>
-                  }
-                />
-              </div>
-            ))}
-          </Document>
-        )}
-    </div>
+                  </div>
+                }
+                error={<div className="text-red-400 p-8 text-center">❌ Erro ao renderizar. <br />Tente recarregar ou usar o botão "Salvar PDF".</div>}
+                className="flex flex-col items-center w-full"
+              >
+                {numPages && Array.from(new Array(numPages), (el, index) => (
+                  <div key={`page_${index + 1}`} className="w-full mb-1 sm:mb-4 shadow-lg relative bg-gray-800 min-h-[300px]">
+                    {/* Lazy loading wrapper could go here, but rely on Page loading prop first */}
+                    <Page
+                      key={`page_${index + 1}`}
+                      pageNumber={index + 1}
+                      width={pageWidth}
+                      renderTextLayer={false}
+                      renderAnnotationLayer={false}
+                      canvasBackground="transparent"
+                      className="w-full mix-blend-normal"
+                      loading={
+                        <div className="aspect-[2/3] w-full bg-gray-800/50 animate-pulse flex items-center justify-center h-full">
+                          <span className="text-xs text-gray-500">Carregando pág. {index + 1}...</span>
+                        </div>
+                      }
+                    />
+                  </div>
+                ))}
+              </Document>
+            )}
+          </div>
           </div >
-        ) : aulaAtual.videoUrl && aulaAtual.isImage ? (
+  ) : aulaAtual.videoUrl && aulaAtual.isImage ? (
     <div className="w-full relative rounded-xl overflow-hidden shadow-2xl mb-8 border border-white/10 group">
       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10 pointer-events-none" />
       <img
