@@ -413,100 +413,125 @@ export default function AulaPage() {
                           file={pdfBlob}
                           onLoadSuccess={onDocumentLoadSuccess}
                           loading={
-                            alt = { aulaAtual.nome }
-                className="w-full h-auto object-contain"
-                        />
-            </div>
-          </div>
-              ) : null
-              }
-
-              {
-                aulaAtual.content ? (
-                  <div className="max-w-5xl mx-auto px-4">
-                    <div className="bg-black/40 backdrop-blur-md border border-white/10 p-8 md:p-12 rounded-xl shadow-2xl text-gray-100">
-                      <div className="prose prose-invert prose-lg max-w-none font-light tracking-wide">
-                        <ReactMarkdown
-                          components={{
-                            h1: ({ node, ...props }) => <h1 className="font-serif text-amber-500/90 text-3xl mb-6 border-b border-white/10 pb-4" {...props} />,
-                            h2: ({ node, ...props }) => <h2 className="font-serif text-amber-200/90 text-2xl mt-8 mb-4" {...props} />,
-                            p: ({ node, ...props }) => <p className="leading-loose text-gray-200 mb-4" {...props} />,
-                            strong: ({ node, ...props }) => <strong className="text-amber-100 font-semibold" {...props} />
-                          }}
+                            <div className="flex flex-col items-center py-20">
+                              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-amber-500 mb-2"></div>
+                              <span className="text-gray-400">Renderizando...</span>
+                            </div>
+                          }
+                          error={
+                            <div className="flex flex-col items-center justify-center p-8 text-red-500">
+                              <p className="font-bold mb-2">Não foi possível carregar o PDF.</p>
+                              <button onClick={() => window.open(getFullUrl(aulaAtual.pdfUrl!), '_blank')} className="mt-4 px-4 py-2 bg-amber-600 rounded text-white text-sm">
+                                Abrir Externamente
+                              </button>
+                            </div>
+                          }
+                          className="flex flex-col items-center w-full"
                         >
-                          {aulaAtual.content}
-                        </ReactMarkdown>
-                      </div>
+                          {Array.from(new Array(numPages), (el, index) => (
+                            <Page
+                              key={`page_${index + 1}`}
+                              pageNumber={index + 1}
+                              width={800} // Valor fixo seguro ou responsivo se tiver hook de window
+                              className="mb-4 shadow-lg min-h-[500px]"
+                              renderTextLayer={false}
+                              renderAnnotationLayer={false}
+                            />
+                          ))}
+                        </Document>
+                      )}
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </div>
+
+            {
+              aulaAtual.content ? (
+                <div className="max-w-5xl mx-auto px-4">
+                  <div className="bg-black/40 backdrop-blur-md border border-white/10 p-8 md:p-12 rounded-xl shadow-2xl text-gray-100">
+                    <div className="prose prose-invert prose-lg max-w-none font-light tracking-wide">
+                      <ReactMarkdown
+                        components={{
+                          h1: ({ node, ...props }) => <h1 className="font-serif text-amber-500/90 text-3xl mb-6 border-b border-white/10 pb-4" {...props} />,
+                          h2: ({ node, ...props }) => <h2 className="font-serif text-amber-200/90 text-2xl mt-8 mb-4" {...props} />,
+                          p: ({ node, ...props }) => <p className="leading-loose text-gray-200 mb-4" {...props} />,
+                          strong: ({ node, ...props }) => <strong className="text-amber-100 font-semibold" {...props} />
+                        }}
+                      >
+                        {aulaAtual.content}
+                      </ReactMarkdown>
                     </div>
                   </div>
-                ) : aulaAtual.isImage ? (
-                  <div className="flex justify-center items-center p-4 bg-gray-800/50">
-                    {/* Imagem do Paper Toy */}
-                    <img
-                      src={previewUrl}
-                      alt={aulaAtual.nome}
-                      className="max-h-[70vh] object-contain rounded-lg shadow-lg"
-                    />
-                  </div>
-                ) : (
-                  /* Lógica Antiga de Vídeo (Fallback) */
-                  aulaAtual.videoUrl ? (
-                    isVideo ? (
-                      <div className="w-full aspect-video bg-transparent">
-                        <iframe
-                          src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
-                          title={aulaAtual.nome}
-                          allow="autoplay; fullscreen; picture-in-picture"
-                          frameBorder="0"
-                          scrolling="no"
-                          className="w-full h-full"
-                        ></iframe>
-                      </div>
-                    ) : (
-                      <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
-                    )
-                  ) : null
-                )
-              }
-
-              {/* --- Area de Download para Paper Toys --- */}
-              {aulaAtual.isImage && aulaAtual.downloadUrl && (
-                <div className="flex justify-center mt-8">
-                  <button
-                    onClick={handleSecureDownload}
-                    className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
-                  >
-                    <DownloadIcon />
-                    BAIXAR ARQUIVO (PDF/IMAGEM)
-                  </button>
                 </div>
-              )}
-
-              {isUltimaAulaDoModulo && isModuloConcluido && (
-                <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
-                  <h3 className="font-bold text-lg">Parabéns!</h3>
-                  <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+              ) : aulaAtual.isImage ? (
+                <div className="flex justify-center items-center p-4 bg-gray-800/50">
+                  {/* Imagem do Paper Toy */}
+                  <img
+                    src={previewUrl}
+                    alt={aulaAtual.nome}
+                    className="max-h-[70vh] object-contain rounded-lg shadow-lg"
+                  />
                 </div>
-              )}
+              ) : (
+                /* Lógica Antiga de Vídeo (Fallback) */
+                aulaAtual.videoUrl ? (
+                  isVideo ? (
+                    <div className="w-full aspect-video bg-transparent">
+                      <iframe
+                        src={aulaAtual.videoUrl.includes('?') ? `${aulaAtual.videoUrl}&playsinline=1` : `${aulaAtual.videoUrl}?playsinline=1`}
+                        title={aulaAtual.nome}
+                        allow="autoplay; fullscreen; picture-in-picture"
+                        frameBorder="0"
+                        scrolling="no"
+                        className="w-full h-full"
+                      ></iframe>
+                    </div>
+                  ) : (
+                    <iframe src={aulaAtual.videoUrl} title={aulaAtual.nome} frameBorder="0" className="w-full h-[75vh] bg-white"></iframe>
+                  )
+                ) : null
+              )
+            }
 
-              {feedbackMessage && (
-                <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
-                  <p>{feedbackMessage}</p>
-                </div>
-              )}
-
-              {/* Botão Próximo */}
-              <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
+            {/* --- Area de Download para Paper Toys --- */}
+            {aulaAtual.isImage && aulaAtual.downloadUrl && (
+              <div className="flex justify-center mt-8">
                 <button
-                  onClick={handleProximo}
-                  disabled={isRedirecting}
-                  className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+                  onClick={handleSecureDownload}
+                  className="flex items-center gap-2 px-8 py-4 bg-yellow-500 hover:bg-yellow-400 text-black font-bold text-lg rounded-full shadow-lg hover:shadow-yellow-500/50 transition-all transform hover:-translate-y-1 cursor-pointer"
                 >
-                  <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
-                  {!isUltimaAulaDoModulo && <ArrowRightIcon />}
+                  <DownloadIcon />
+                  BAIXAR ARQUIVO (PDF/IMAGEM)
                 </button>
               </div>
-            </main>
+            )}
+
+            {isUltimaAulaDoModulo && isModuloConcluido && (
+              <div className="bg-green-900/50 border border-green-700 text-green-300 px-4 py-3 rounded-lg text-center mt-6">
+                <h3 className="font-bold text-lg">Parabéns!</h3>
+                <p className="text-sm">Você concluiu o {modulo.nome}. Redirecionando para o Início...</p>
+              </div>
+            )}
+
+            {feedbackMessage && (
+              <div className={`px-4 py-3 rounded-lg text-center mt-4 ${isRedirecting ? 'bg-yellow-900/50 border border-yellow-700 text-yellow-300' : ''}`}>
+                <p>{feedbackMessage}</p>
+              </div>
+            )}
+
+            {/* Botão Próximo */}
+            <div className="flex flex-col sm:flex-row items-center justify-end gap-4 p-4 mt-8 bg-gray-800/50 backdrop-blur-sm rounded-xl border border-gray-700">
+              <button
+                onClick={handleProximo}
+                disabled={isRedirecting}
+                className="w-full sm:w-auto px-8 py-3 rounded-full font-semibold text-base transition-all duration-300 ease-in-out shadow-lg hover:shadow-xl transform hover:-translate-y-1 flex items-center justify-center gap-2 bg-sky-600 hover:bg-sky-500 text-white shadow-sky-600/30 disabled:bg-gray-500 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+              >
+                <span>{isUltimaAulaDoModulo ? 'Concluir Estudo' : 'Próxima'}</span>
+                {!isUltimaAulaDoModulo && <ArrowRightIcon />}
+              </button>
+            </div>
+          </main>
           </div>
-        );
+  );
 }
