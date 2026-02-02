@@ -316,7 +316,7 @@ export default function AulaPage() {
       <main className="space-y-6">
 
         {aulaAtual.pdfUrl ? (
-          <div className="w-full bg-gray-900 md:rounded-xl overflow-hidden shadow-2xl border-y md:border border-white/10 relative flex flex-col min-h-[50vh]">
+          <div className="w-full bg-gray-900 md:rounded-xl md:overflow-hidden shadow-2xl border-y md:border border-white/10 relative flex flex-col min-h-[50vh]">
 
             {/* Mobile Actions Header */}
             <div className="bg-gray-800/80 backdrop-blur p-3 flex justify-between items-center md:hidden border-b border-white/10 sticky top-0 z-40">
@@ -332,7 +332,7 @@ export default function AulaPage() {
               </button>
             </div>
 
-            <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center overflow-y-auto" style={{ maxHeight: '80vh', WebkitOverflowScrolling: 'touch' }}>
+            <div id="pdf-wrapper" className="w-full relative bg-gray-900 flex flex-col items-center pb-8">
 
               {/* React PDF Viewer */}
               {pdfBlob && (
