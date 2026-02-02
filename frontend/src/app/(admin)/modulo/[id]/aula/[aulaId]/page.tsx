@@ -421,7 +421,7 @@ export default function AulaPage() {
               )}
 
               {/* NATIVE PDF VIEWER (React-PDF) */}
-              <div className="relative flex-1 overflow-auto flex justify-center p-4 bg-stone-100">
+              <div className="relative flex-1 overflow-auto flex justify-center p-0 md:p-4 bg-stone-100">
 
                 {pdfError && !isIframeLoading && (
                   <div className="absolute inset-0 z-30 flex flex-col items-center justify-center p-4 bg-gray-900">
@@ -444,8 +444,8 @@ export default function AulaPage() {
                       <Page
                         key={`page_${index + 1}`}
                         pageNumber={index + 1}
-                        width={pageWidth > 800 ? 800 : pageWidth * 0.9}
-                        className="mb-6 shadow-2xl"
+                        width={pageWidth > 800 ? 800 : pageWidth}
+                        className="mb-1 md:mb-6 shadow-sm md:shadow-2xl"
                         renderTextLayer={false}
                         renderAnnotationLayer={false}
                       />
